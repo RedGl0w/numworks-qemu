@@ -117,6 +117,12 @@ config NETDUINOPLUS2
     bool
     select STM32F4XX_SOC
 
+config NUMWORKS
+    bool
+    select STM32F4XX_SOC
+    select ST7789V
+    select GPIO_KEYPAD
+
 config NSERIES
     bool
     select OMAP
