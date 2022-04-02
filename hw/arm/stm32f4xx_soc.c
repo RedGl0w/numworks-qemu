@@ -30,7 +30,26 @@
 #include "hw/qdev-clock.h"
 #include "hw/misc/unimp.h"
 
+#define RCC_ADD                        0x40023800
 #define SYSCFG_ADD                     0x40013800
+#define USB_OTG_FS_ADD                 0x50000000
+
+static const char *gpio_pass[] = {
+    "gpio-a",
+    "gpio-b",
+    "gpio-c",
+    "gpio-d",
+    "gpio-e",
+    "gpio-f",
+    "gpio-g",
+    "gpio-h",
+    "gpio-i",
+    "gpio-j",
+    "gpio-k",
+};
+static const uint32_t gpio_addr[] = { 0x40020000, 0x40020400, 0x40020800,
+                                      0x40020C00, 0x40021000, 0x40021400,
+                                      0x40021800, 0x40021C00, 0x40022000 };
 static const uint32_t usart_addr[] = { 0x40011000, 0x40004400, 0x40004800,
                                        0x40004C00, 0x40005000, 0x40011400,
                                        0x40007800, 0x40007C00 };
@@ -69,7 +88,13 @@ static void stm32f4xx_soc_initfn(Object *obj)
 
     object_initialize_child(obj, "armv7m", &s->armv7m, TYPE_ARMV7M);
 
+    object_initialize_child(obj, "rcc", &s->rcc, TYPE_STM32F2XX_RCC);
     object_initialize_child(obj, "syscfg", &s->syscfg, TYPE_STM32F2XX_SYSCFG);
+
+    for (i = 0; i < STM_NUM_GPIOS; i++) {
+        object_initialize_child(obj, "gpio[*]", &s->gpio[i],
+                                TYPE_STM32F2XX_GPIO);
+    }
 
     for (i = 0; i < STM_NUM_USARTS; i++) {
         object_initialize_child(obj, "usart[*]", &s->usart[i],
@@ -90,6 +115,7 @@ static void stm32f4xx_soc_initfn(Object *obj)
     }
 
     object_initialize_child(obj, "exti", &s->exti, TYPE_STM32F4XX_EXTI);
+    object_initialize_child(obj, "usb-otg-fs", &s->usb_otg_fs, TYPE_STM32F2XX_USB_OTG_FS);
 
     s->sysclk = qdev_init_clock_in(DEVICE(s), "sysclk", NULL, NULL, 0);
     s->refclk = qdev_init_clock_in(DEVICE(s), "refclk", NULL, NULL, 0);
@@ -163,6 +189,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     memory_region_add_subregion(system_memory, SRAM_BASE_ADDRESS, &s->sram);
 
     armv7m = DEVICE(&s->armv7m);
+    qdev_prop_set_uint32(armv7m, "init-nsvtor", FLASH_BASE_ADDRESS);
     qdev_prop_set_uint32(armv7m, "num-irq", 96);
     qdev_prop_set_string(armv7m, "cpu-type", ARM_CPU_TYPE_NAME("cortex-m4"));
     qdev_prop_set_bit(armv7m, "enable-bitband", true);
@@ -174,6 +201,14 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
         return;
     }
 
+    /* Reset and clock controller */
+    dev = DEVICE(&s->rcc);
+    if (!sysbus_realize(SYS_BUS_DEVICE(&s->rcc), errp)) {
+        return;
+    }
+    busdev = SYS_BUS_DEVICE(dev);
+    sysbus_mmio_map(busdev, 0, RCC_ADD);
+
     /* System configuration controller */
     dev = DEVICE(&s->syscfg);
     if (!sysbus_realize(SYS_BUS_DEVICE(&s->syscfg), errp)) {
@@ -182,6 +217,17 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     busdev = SYS_BUS_DEVICE(dev);
     sysbus_mmio_map(busdev, 0, SYSCFG_ADD);
     sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(armv7m, SYSCFG_IRQ));
+
+    /* GPIOs */
+    for (i = 0; i < STM_NUM_GPIOS; i++) {
+        dev = DEVICE(&s->gpio[i]);
+        if (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio[i]), errp)) {
+            return;
+        }
+        busdev = SYS_BUS_DEVICE(dev);
+        sysbus_mmio_map(busdev, 0, gpio_addr[i]);
+        qdev_pass_aliased_gpios(dev, NULL, dev_soc, gpio_pass[i]);
+    }
 
     /* Attach UART (uses USART registers) and USART controllers */
     for (i = 0; i < STM_NUM_USARTS; i++) {
@@ -257,6 +303,14 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
         qdev_connect_gpio_out(DEVICE(&s->syscfg), i, qdev_get_gpio_in(dev, i));
     }
 
+    /* USB OTG FS device */
+    dev = DEVICE(&s->usb_otg_fs);
+    if (!sysbus_realize(SYS_BUS_DEVICE(&s->usb_otg_fs), errp)) {
+        return;
+    }
+    busdev = SYS_BUS_DEVICE(dev);
+    sysbus_mmio_map(busdev, 0, USB_OTG_FS_ADD);
+
     create_unimplemented_device("timer[7]",    0x40001400, 0x400);
     create_unimplemented_device("timer[12]",   0x40001800, 0x400);
     create_unimplemented_device("timer[6]",    0x40001000, 0x400);
@@ -280,26 +334,16 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     create_unimplemented_device("timer[9]",    0x40014000, 0x400);
     create_unimplemented_device("timer[10]",   0x40014400, 0x400);
     create_unimplemented_device("timer[11]",   0x40014800, 0x400);
-    create_unimplemented_device("GPIOA",       0x40020000, 0x400);
-    create_unimplemented_device("GPIOB",       0x40020400, 0x400);
-    create_unimplemented_device("GPIOC",       0x40020800, 0x400);
-    create_unimplemented_device("GPIOD",       0x40020C00, 0x400);
-    create_unimplemented_device("GPIOE",       0x40021000, 0x400);
-    create_unimplemented_device("GPIOF",       0x40021400, 0x400);
-    create_unimplemented_device("GPIOG",       0x40021800, 0x400);
-    create_unimplemented_device("GPIOH",       0x40021C00, 0x400);
-    create_unimplemented_device("GPIOI",       0x40022000, 0x400);
     create_unimplemented_device("CRC",         0x40023000, 0x400);
-    create_unimplemented_device("RCC",         0x40023800, 0x400);
     create_unimplemented_device("Flash Int",   0x40023C00, 0x400);
     create_unimplemented_device("BKPSRAM",     0x40024000, 0x400);
     create_unimplemented_device("DMA1",        0x40026000, 0x400);
     create_unimplemented_device("DMA2",        0x40026400, 0x400);
     create_unimplemented_device("Ethernet",    0x40028000, 0x1400);
     create_unimplemented_device("USB OTG HS",  0x40040000, 0x30000);
-    create_unimplemented_device("USB OTG FS",  0x50000000, 0x31000);
     create_unimplemented_device("DCMI",        0x50050000, 0x400);
     create_unimplemented_device("RNG",         0x50060800, 0x400);
+    create_unimplemented_device("FSMC",        0xA0000000, 0x1000);
 }
 
 static Property stm32f4xx_soc_properties[] = {

@@ -25,7 +25,10 @@
 #ifndef HW_ARM_STM32F4XX_SOC_H
 #define HW_ARM_STM32F4XX_SOC_H
 
+#include "hw/gpio/stm32f2xx_gpio.h"
+#include "hw/misc/stm32f2xx_rcc.h"
 #include "hw/misc/stm32f2xx_syscfg.h"
+#include "hw/misc/stm32f2xx_usb_otg_fs.h"
 #include "hw/timer/stm32f2xx_timer.h"
 #include "hw/char/stm32f2xx_usart.h"
 #include "hw/adc/stm32f2xx_adc.h"
@@ -47,6 +50,7 @@ OBJECT_DECLARE_SIMPLE_TYPE(STM32F4XXState, STM32F4XX_SOC)
 #define STM32F412_SOC_FLASH_SIZE (1 * MiB)
 #define STM32F412_SOC_RAM_SIZE (256 * KiB)
 
+#define STM_NUM_GPIOS 9
 #define STM_NUM_USARTS 7
 #define STM_NUM_TIMERS 4
 #define STM_NUM_ADCS 6
@@ -64,6 +68,8 @@ struct STM32F4XXState {
 
     ARMv7MState armv7m;
 
+    STM32F2xxGpioState gpio[STM_NUM_GPIOS];
+    STM32F2XXRccState rcc;
     STM32F2XXSyscfgState syscfg;
     STM32F4xxExtiState exti;
     STM32F2XXUsartState usart[STM_NUM_USARTS];
@@ -71,6 +77,7 @@ struct STM32F4XXState {
     qemu_or_irq adc_irqs;
     STM32F2XXADCState adc[STM_NUM_ADCS];
     STM32F2XXSPIState spi[STM_NUM_SPIS];
+    STM32F2XXUsbOtgFsState usb_otg_fs;
 
     MemoryRegion sram;
     MemoryRegion flash;
