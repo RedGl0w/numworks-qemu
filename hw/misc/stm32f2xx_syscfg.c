@@ -105,6 +105,8 @@ static void stm32f2xx_syscfg_write(void *opaque, hwaddr addr,
         s->syscfg_exticr[addr / 4 - SYSCFG_EXTICR1 / 4] = (value & 0xFFFF);
         return;
     case SYSCFG_CMPCR:
+        value &= ~(1u << 8);
+        value |= (value & 0x1) << 8;
         s->syscfg_cmpcr = value;
         return;
     default:
