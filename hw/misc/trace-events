@@ -263,3 +263,7 @@ virt_ctrl_write(void *dev, unsigned int addr, unsigned int size, uint64_t value)
 virt_ctrl_reset(void *dev) "ctrl: %p"
 virt_ctrl_realize(void *dev) "ctrl: %p"
 virt_ctrl_instance_init(void *dev) "ctrl: %p"
+
+# stm32f2xx_rcc.c
+stm32f2xx_rcc_read(void *dev, unsigned int addr, unsigned int size, uint64_t value) "rcc: %p reg: 0x%02x size: %d value: 0x%"PRIx64
+stm32f2xx_rcc_write(void *dev, unsigned int addr, unsigned int size, uint64_t value) "rcc: %p reg: 0x%02x size: %d value: 0x%"PRIx64
