@@ -1,5 +1,5 @@
 /*
- * STM32F405 SoC
+ * STM32F4XX SoC
  *
  * Copyright (c) 2014 Alistair Francis <alistair@alistair23.me>
  *
@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef HW_ARM_STM32F405_SOC_H
-#define HW_ARM_STM32F405_SOC_H
+#ifndef HW_ARM_STM32F4XX_SOC_H
+#define HW_ARM_STM32F4XX_SOC_H
 
 #include "hw/misc/stm32f4xx_syscfg.h"
 #include "hw/timer/stm32f2xx_timer.h"
@@ -35,8 +35,8 @@
 #include "hw/arm/armv7m.h"
 #include "qom/object.h"
 
-#define TYPE_STM32F405_SOC "stm32f405-soc"
-OBJECT_DECLARE_SIMPLE_TYPE(STM32F405State, STM32F405_SOC)
+#define TYPE_STM32F4XX_SOC "stm32f4xx-soc"
+OBJECT_DECLARE_SIMPLE_TYPE(STM32F4XXState, STM32F4XX_SOC)
 
 #define STM_NUM_USARTS 7
 #define STM_NUM_TIMERS 4
@@ -48,7 +48,7 @@ OBJECT_DECLARE_SIMPLE_TYPE(STM32F405State, STM32F405_SOC)
 #define SRAM_BASE_ADDRESS 0x20000000
 #define SRAM_SIZE (192 * 1024)
 
-struct STM32F405State {
+struct STM32F4XXState {
     /*< private >*/
     SysBusDevice parent_obj;
     /*< public >*/

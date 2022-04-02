@@ -1,5 +1,5 @@
 /*
- * STM32F405 SoC
+ * STM32F4xx SoC
  *
  * Copyright (c) 2014 Alistair Francis <alistair@alistair23.me>
  *
@@ -26,7 +26,7 @@
 #include "qapi/error.h"
 #include "exec/address-spaces.h"
 #include "sysemu/sysemu.h"
-#include "hw/arm/stm32f405_soc.h"
+#include "hw/arm/stm32f4xx_soc.h"
 #include "hw/qdev-clock.h"
 #include "hw/misc/unimp.h"
 
@@ -52,9 +52,9 @@ static const int exti_irq[] =  { 6, 7, 8, 9, 10, 23, 23, 23, 23, 23, 40,
                                  40, 40, 40, 40, 40} ;
 
 
-static void stm32f405_soc_initfn(Object *obj)
+static void stm32f4xx_soc_initfn(Object *obj)
 {
-    STM32F405State *s = STM32F405_SOC(obj);
+    STM32F4XXState *s = STM32F4XX_SOC(obj);
     int i;
 
     object_initialize_child(obj, "armv7m", &s->armv7m, TYPE_ARMV7M);
@@ -85,9 +85,9 @@ static void stm32f405_soc_initfn(Object *obj)
     s->refclk = qdev_init_clock_in(DEVICE(s), "refclk", NULL, NULL, 0);
 }
 
-static void stm32f405_soc_realize(DeviceState *dev_soc, Error **errp)
+static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
 {
-    STM32F405State *s = STM32F405_SOC(dev_soc);
+    STM32F4XXState *s = STM32F4XX_SOC(dev_soc);
     MemoryRegion *system_memory = get_system_memory();
     DeviceState *dev, *armv7m;
     SysBusDevice *busdev;
@@ -118,20 +118,20 @@ static void stm32f405_soc_realize(DeviceState *dev_soc, Error **errp)
     clock_set_mul_div(s->refclk, 8, 1);
     clock_set_source(s->refclk, s->sysclk);
 
-    memory_region_init_rom(&s->flash, OBJECT(dev_soc), "STM32F405.flash",
+    memory_region_init_rom(&s->flash, OBJECT(dev_soc), "STM32F4XX.flash",
                            FLASH_SIZE, &err);
     if (err != NULL) {
         error_propagate(errp, err);
         return;
     }
     memory_region_init_alias(&s->flash_alias, OBJECT(dev_soc),
-                             "STM32F405.flash.alias", &s->flash, 0,
+                             "STM32F4XX.flash.alias", &s->flash, 0,
                              FLASH_SIZE);
 
     memory_region_add_subregion(system_memory, FLASH_BASE_ADDRESS, &s->flash);
     memory_region_add_subregion(system_memory, 0, &s->flash_alias);
 
-    memory_region_init_ram(&s->sram, NULL, "STM32F405.sram", SRAM_SIZE,
+    memory_region_init_ram(&s->sram, NULL, "STM32F4XX.sram", SRAM_SIZE,
                            &err);
     if (err != NULL) {
         error_propagate(errp, err);
@@ -279,31 +279,31 @@ static void stm32f405_soc_realize(DeviceState *dev_soc, Error **errp)
     create_unimplemented_device("RNG",         0x50060800, 0x400);
 }
 
-static Property stm32f405_soc_properties[] = {
-    DEFINE_PROP_STRING("cpu-type", STM32F405State, cpu_type),
+static Property stm32f4xx_soc_properties[] = {
+    DEFINE_PROP_STRING("cpu-type", STM32F4XXState, cpu_type),
     DEFINE_PROP_END_OF_LIST(),
 };
 
-static void stm32f405_soc_class_init(ObjectClass *klass, void *data)
+static void stm32f4xx_soc_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
-    dc->realize = stm32f405_soc_realize;
-    device_class_set_props(dc, stm32f405_soc_properties);
+    dc->realize = stm32f4xx_soc_realize;
+    device_class_set_props(dc, stm32f4xx_soc_properties);
     /* No vmstate or reset required: device has no internal state */
 }
 
-static const TypeInfo stm32f405_soc_info = {
-    .name          = TYPE_STM32F405_SOC,
+static const TypeInfo stm32f4xx_soc_info = {
+    .name          = TYPE_STM32F4XX_SOC,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(STM32F405State),
-    .instance_init = stm32f405_soc_initfn,
-    .class_init    = stm32f405_soc_class_init,
+    .instance_size = sizeof(STM32F4XXState),
+    .instance_init = stm32f4xx_soc_initfn,
+    .class_init    = stm32f4xx_soc_class_init,
 };
 
-static void stm32f405_soc_types(void)
+static void stm32f4xx_soc_types(void)
 {
-    type_register_static(&stm32f405_soc_info);
+    type_register_static(&stm32f4xx_soc_info);
 }
 
-type_init(stm32f405_soc_types)
+type_init(stm32f4xx_soc_types)
