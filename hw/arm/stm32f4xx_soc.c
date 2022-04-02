@@ -59,6 +59,7 @@ typedef struct STM32F4Family {
 
 static const STM32F4Family stm32f4_family[] = {
     { VARIANT_STM32F405_SOC, STM32F405_SOC_FLASH_SIZE, STM32F405_SOC_RAM_SIZE },
+    { VARIANT_STM32F412_SOC, STM32F412_SOC_FLASH_SIZE, STM32F412_SOC_RAM_SIZE },
 };
 
 static void stm32f4xx_soc_initfn(Object *obj)
