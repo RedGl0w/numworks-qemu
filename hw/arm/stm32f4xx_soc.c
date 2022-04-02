@@ -51,6 +51,15 @@ static const int spi_irq[] =   { 35, 36, 51, 0, 0, 0 };
 static const int exti_irq[] =  { 6, 7, 8, 9, 10, 23, 23, 23, 23, 23, 40,
                                  40, 40, 40, 40, 40} ;
 
+typedef struct STM32F4Family {
+    const char *soc_type;
+    int flash_size;
+    int ram_size;
+} STM32F4Family;
+
+static const STM32F4Family stm32f4_family[] = {
+    { VARIANT_STM32F405_SOC, STM32F405_SOC_FLASH_SIZE, STM32F405_SOC_RAM_SIZE },
+};
 
 static void stm32f4xx_soc_initfn(Object *obj)
 {
@@ -93,6 +102,19 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     SysBusDevice *busdev;
     Error *err = NULL;
     int i;
+    const STM32F4Family *soc_variant = NULL;
+
+    for (i = 0; i < sizeof(stm32f4_family) / sizeof(stm32f4_family[0]); i++) {
+        if (!strcmp(s->soc_type, stm32f4_family[i].soc_type)) {
+            soc_variant = &stm32f4_family[i];
+            break;
+        }
+    }
+
+    if (!soc_variant) {
+        error_setg(errp, "unknown soc-type variant for stm32f4 family");
+        return;
+    }
 
     /*
      * We use s->refclk internally and only define it with qdev_init_clock_in()
@@ -119,20 +141,20 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     clock_set_source(s->refclk, s->sysclk);
 
     memory_region_init_rom(&s->flash, OBJECT(dev_soc), "STM32F4XX.flash",
-                           FLASH_SIZE, &err);
+                           soc_variant->flash_size, &err);
     if (err != NULL) {
         error_propagate(errp, err);
         return;
     }
     memory_region_init_alias(&s->flash_alias, OBJECT(dev_soc),
                              "STM32F4XX.flash.alias", &s->flash, 0,
-                             FLASH_SIZE);
+                             soc_variant->flash_size);
 
     memory_region_add_subregion(system_memory, FLASH_BASE_ADDRESS, &s->flash);
     memory_region_add_subregion(system_memory, 0, &s->flash_alias);
 
-    memory_region_init_ram(&s->sram, NULL, "STM32F4XX.sram", SRAM_SIZE,
-                           &err);
+    memory_region_init_ram(&s->sram, NULL, "STM32F4XX.sram",
+                           soc_variant->ram_size, &err);
     if (err != NULL) {
         error_propagate(errp, err);
         return;
@@ -141,7 +163,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
 
     armv7m = DEVICE(&s->armv7m);
     qdev_prop_set_uint32(armv7m, "num-irq", 96);
-    qdev_prop_set_string(armv7m, "cpu-type", s->cpu_type);
+    qdev_prop_set_string(armv7m, "cpu-type", ARM_CPU_TYPE_NAME("cortex-m4"));
     qdev_prop_set_bit(armv7m, "enable-bitband", true);
     qdev_connect_clock_in(armv7m, "cpuclk", s->sysclk);
     qdev_connect_clock_in(armv7m, "refclk", s->refclk);
@@ -280,7 +302,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
 }
 
 static Property stm32f4xx_soc_properties[] = {
-    DEFINE_PROP_STRING("cpu-type", STM32F4XXState, cpu_type),
+    DEFINE_PROP_STRING("soc-type", STM32F4XXState, soc_type),
     DEFINE_PROP_END_OF_LIST(),
 };
 

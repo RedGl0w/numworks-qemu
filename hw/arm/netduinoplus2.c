@@ -44,13 +44,13 @@ static void netduinoplus2_init(MachineState *machine)
     clock_set_hz(sysclk, SYSCLK_FRQ);
 
     dev = qdev_new(TYPE_STM32F4XX_SOC);
-    qdev_prop_set_string(dev, "cpu-type", ARM_CPU_TYPE_NAME("cortex-m4"));
+    qdev_prop_set_string(dev, "soc-type", VARIANT_STM32F405_SOC);
     qdev_connect_clock_in(dev, "sysclk", sysclk);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     armv7m_load_kernel(ARM_CPU(first_cpu),
                        machine->kernel_filename,
-                       FLASH_SIZE);
+                       STM32F405_SOC_FLASH_SIZE);
 }
 
 static void netduinoplus2_machine_init(MachineClass *mc)

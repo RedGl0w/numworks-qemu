@@ -33,10 +33,15 @@
 #include "hw/or-irq.h"
 #include "hw/ssi/stm32f2xx_spi.h"
 #include "hw/arm/armv7m.h"
+#include "qemu/units.h"
 #include "qom/object.h"
 
 #define TYPE_STM32F4XX_SOC "stm32f4xx-soc"
 OBJECT_DECLARE_SIMPLE_TYPE(STM32F4XXState, STM32F4XX_SOC)
+
+#define VARIANT_STM32F405_SOC "stm32f405-soc"
+#define STM32F405_SOC_FLASH_SIZE (1 * MiB)
+#define STM32F405_SOC_RAM_SIZE (192 * KiB)
 
 #define STM_NUM_USARTS 7
 #define STM_NUM_TIMERS 4
@@ -44,16 +49,14 @@ OBJECT_DECLARE_SIMPLE_TYPE(STM32F4XXState, STM32F4XX_SOC)
 #define STM_NUM_SPIS 6
 
 #define FLASH_BASE_ADDRESS 0x08000000
-#define FLASH_SIZE (1024 * 1024)
 #define SRAM_BASE_ADDRESS 0x20000000
-#define SRAM_SIZE (192 * 1024)
 
 struct STM32F4XXState {
     /*< private >*/
     SysBusDevice parent_obj;
     /*< public >*/
 
-    char *cpu_type;
+    char *soc_type;
 
     ARMv7MState armv7m;
 
