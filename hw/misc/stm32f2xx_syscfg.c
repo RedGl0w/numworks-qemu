@@ -1,5 +1,5 @@
 /*
- * STM32F2XX SYSCFG
+ * STM32F2xx SYSCFG
  *
  * Copyright (c) 2014 Alistair Francis <alistair@alistair23.me>
  *
@@ -23,21 +23,11 @@
  */
 
 #include "qemu/osdep.h"
-#include "hw/misc/stm32f2xx_syscfg.h"
 #include "qemu/log.h"
-#include "qemu/module.h"
-
-#ifndef STM_SYSCFG_ERR_DEBUG
-#define STM_SYSCFG_ERR_DEBUG 0
-#endif
-
-#define DB_PRINT_L(lvl, fmt, args...) do { \
-    if (STM_SYSCFG_ERR_DEBUG >= lvl) { \
-        qemu_log("%s: " fmt, __func__, ## args); \
-    } \
-} while (0)
-
-#define DB_PRINT(fmt, args...) DB_PRINT_L(1, fmt, ## args)
+#include "trace.h"
+#include "hw/irq.h"
+#include "migration/vmstate.h"
+#include "hw/misc/stm32f2xx_syscfg.h"
 
 static void stm32f2xx_syscfg_reset(DeviceState *dev)
 {
@@ -45,11 +35,28 @@ static void stm32f2xx_syscfg_reset(DeviceState *dev)
 
     s->syscfg_memrmp = 0x00000000;
     s->syscfg_pmc = 0x00000000;
-    s->syscfg_exticr1 = 0x00000000;
-    s->syscfg_exticr2 = 0x00000000;
-    s->syscfg_exticr3 = 0x00000000;
-    s->syscfg_exticr4 = 0x00000000;
+    s->syscfg_exticr[0] = 0x00000000;
+    s->syscfg_exticr[1] = 0x00000000;
+    s->syscfg_exticr[2] = 0x00000000;
+    s->syscfg_exticr[3] = 0x00000000;
     s->syscfg_cmpcr = 0x00000000;
+}
+
+static void stm32f2xx_syscfg_set_irq(void *opaque, int irq, int level)
+{
+    STM32F2XXSyscfgState *s = opaque;
+    int icrreg = irq / 4;
+    int startbit = (irq & 3) * 4;
+    uint8_t config = irq / 16;
+
+    trace_stm32f2xx_syscfg_set_irq(irq / 16, irq % 16, level);
+
+    g_assert(icrreg < SYSCFG_NUM_EXTICR);
+
+    if (extract32(s->syscfg_exticr[icrreg], startbit, 4) == config) {
+        qemu_set_irq(s->gpio_out[irq], level);
+        trace_stm32f2xx_pulse_exti(irq);
+   }
 }
 
 static uint64_t stm32f2xx_syscfg_read(void *opaque, hwaddr addr,
@@ -57,21 +64,15 @@ static uint64_t stm32f2xx_syscfg_read(void *opaque, hwaddr addr,
 {
     STM32F2XXSyscfgState *s = opaque;
 
-    DB_PRINT("0x%"HWADDR_PRIx"\n", addr);
+    trace_stm32f2xx_syscfg_read(addr);
 
     switch (addr) {
     case SYSCFG_MEMRMP:
         return s->syscfg_memrmp;
     case SYSCFG_PMC:
         return s->syscfg_pmc;
-    case SYSCFG_EXTICR1:
-        return s->syscfg_exticr1;
-    case SYSCFG_EXTICR2:
-        return s->syscfg_exticr2;
-    case SYSCFG_EXTICR3:
-        return s->syscfg_exticr3;
-    case SYSCFG_EXTICR4:
-        return s->syscfg_exticr4;
+    case SYSCFG_EXTICR1...SYSCFG_EXTICR4:
+        return s->syscfg_exticr[addr / 4 - SYSCFG_EXTICR1 / 4];
     case SYSCFG_CMPCR:
         return s->syscfg_cmpcr;
     default:
@@ -79,8 +80,6 @@ static uint64_t stm32f2xx_syscfg_read(void *opaque, hwaddr addr,
                       "%s: Bad offset 0x%"HWADDR_PRIx"\n", __func__, addr);
         return 0;
     }
-
-    return 0;
 }
 
 static void stm32f2xx_syscfg_write(void *opaque, hwaddr addr,
@@ -89,30 +88,21 @@ static void stm32f2xx_syscfg_write(void *opaque, hwaddr addr,
     STM32F2XXSyscfgState *s = opaque;
     uint32_t value = val64;
 
-    DB_PRINT("0x%x, 0x%"HWADDR_PRIx"\n", value, addr);
+    trace_stm32f2xx_syscfg_write(value, addr);
 
     switch (addr) {
     case SYSCFG_MEMRMP:
         qemu_log_mask(LOG_UNIMP,
-                      "%s: Changeing the memory mapping isn't supported " \
+                      "%s: Changing the memory mapping isn't supported " \
                       "in QEMU\n", __func__);
         return;
     case SYSCFG_PMC:
         qemu_log_mask(LOG_UNIMP,
-                      "%s: Changeing the memory mapping isn't supported " \
+                      "%s: Changing the memory mapping isn't supported " \
                       "in QEMU\n", __func__);
         return;
-    case SYSCFG_EXTICR1:
-        s->syscfg_exticr1 = (value & 0xFFFF);
-        return;
-    case SYSCFG_EXTICR2:
-        s->syscfg_exticr2 = (value & 0xFFFF);
-        return;
-    case SYSCFG_EXTICR3:
-        s->syscfg_exticr3 = (value & 0xFFFF);
-        return;
-    case SYSCFG_EXTICR4:
-        s->syscfg_exticr4 = (value & 0xFFFF);
+    case SYSCFG_EXTICR1...SYSCFG_EXTICR4:
+        s->syscfg_exticr[addr / 4 - SYSCFG_EXTICR1 / 4] = (value & 0xFFFF);
         return;
     case SYSCFG_CMPCR:
         s->syscfg_cmpcr = value;
@@ -133,16 +123,36 @@ static void stm32f2xx_syscfg_init(Object *obj)
 {
     STM32F2XXSyscfgState *s = STM32F2XX_SYSCFG(obj);
 
+    sysbus_init_irq(SYS_BUS_DEVICE(obj), &s->irq);
+
     memory_region_init_io(&s->mmio, obj, &stm32f2xx_syscfg_ops, s,
                           TYPE_STM32F2XX_SYSCFG, 0x400);
     sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->mmio);
+
+    qdev_init_gpio_in(DEVICE(obj), stm32f2xx_syscfg_set_irq, 16 * 9);
+    qdev_init_gpio_out(DEVICE(obj), s->gpio_out, 16);
 }
+
+static const VMStateDescription vmstate_stm32f2xx_syscfg = {
+    .name = TYPE_STM32F2XX_SYSCFG,
+    .version_id = 1,
+    .minimum_version_id = 1,
+    .fields = (VMStateField[]) {
+        VMSTATE_UINT32(syscfg_memrmp, STM32F2XXSyscfgState),
+        VMSTATE_UINT32(syscfg_pmc, STM32F2XXSyscfgState),
+        VMSTATE_UINT32_ARRAY(syscfg_exticr, STM32F2XXSyscfgState,
+                             SYSCFG_NUM_EXTICR),
+        VMSTATE_UINT32(syscfg_cmpcr, STM32F2XXSyscfgState),
+        VMSTATE_END_OF_LIST()
+    }
+};
 
 static void stm32f2xx_syscfg_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->reset = stm32f2xx_syscfg_reset;
+    dc->vmsd = &vmstate_stm32f2xx_syscfg;
 }
 
 static const TypeInfo stm32f2xx_syscfg_info = {

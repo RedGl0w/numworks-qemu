@@ -1,5 +1,5 @@
 /*
- * STM32F2XX SYSCFG
+ * STM32F2xx SYSCFG
  *
  * Copyright (c) 2014 Alistair Francis <alistair@alistair23.me>
  *
@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef HW_STM32F2XX_SYSCFG_H
-#define HW_STM32F2XX_SYSCFG_H
+#ifndef HW_STM_SYSCFG_H
+#define HW_STM_SYSCFG_H
 
 #include "hw/sysbus.h"
 #include "qom/object.h"
@@ -39,6 +39,8 @@
 #define TYPE_STM32F2XX_SYSCFG "stm32f2xx-syscfg"
 OBJECT_DECLARE_SIMPLE_TYPE(STM32F2XXSyscfgState, STM32F2XX_SYSCFG)
 
+#define SYSCFG_NUM_EXTICR 4
+
 struct STM32F2XXSyscfgState {
     /* <private> */
     SysBusDevice parent_obj;
@@ -48,11 +50,11 @@ struct STM32F2XXSyscfgState {
 
     uint32_t syscfg_memrmp;
     uint32_t syscfg_pmc;
-    uint32_t syscfg_exticr1;
-    uint32_t syscfg_exticr2;
-    uint32_t syscfg_exticr3;
-    uint32_t syscfg_exticr4;
+    uint32_t syscfg_exticr[SYSCFG_NUM_EXTICR];
     uint32_t syscfg_cmpcr;
+
+    qemu_irq irq;
+    qemu_irq gpio_out[16];
 };
 
-#endif /* HW_STM32F2XX_SYSCFG_H */
+#endif

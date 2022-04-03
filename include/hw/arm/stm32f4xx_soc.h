@@ -25,7 +25,7 @@
 #ifndef HW_ARM_STM32F4XX_SOC_H
 #define HW_ARM_STM32F4XX_SOC_H
 
-#include "hw/misc/stm32f4xx_syscfg.h"
+#include "hw/misc/stm32f2xx_syscfg.h"
 #include "hw/timer/stm32f2xx_timer.h"
 #include "hw/char/stm32f2xx_usart.h"
 #include "hw/adc/stm32f2xx_adc.h"
@@ -64,7 +64,7 @@ struct STM32F4XXState {
 
     ARMv7MState armv7m;
 
-    STM32F4xxSyscfgState syscfg;
+    STM32F2XXSyscfgState syscfg;
     STM32F4xxExtiState exti;
     STM32F2XXUsartState usart[STM_NUM_USARTS];
     STM32F2XXTimerState timer[STM_NUM_TIMERS];
