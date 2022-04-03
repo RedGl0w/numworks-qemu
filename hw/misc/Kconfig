@@ -83,6 +83,9 @@ config STM32F2XX_RCC
 config STM32F2XX_SYSCFG
     bool
 
+config STM32F2XX_USB_OTG_FS
+    bool
+
 config STM32F4XX_EXTI
     bool
 
