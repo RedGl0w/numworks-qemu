@@ -177,3 +177,7 @@ macfb_ctrl_write(uint64_t addr, uint64_t value, unsigned int size) "addr 0x%"PRI
 macfb_sense_read(uint32_t value) "video sense: 0x%"PRIx32
 macfb_sense_write(uint32_t value) "video sense: 0x%"PRIx32
 macfb_update_mode(uint32_t width, uint32_t height, uint8_t depth) "setting mode to width %"PRId32 " height %"PRId32 " size %d"
+
+# st7789v.c
+st7789v_read(void *dev, unsigned int addr, unsigned int size, uint64_t value) "st7789v: %p reg: 0x%02x size: %d value: 0x%"PRIx64
+st7789v_write(void *dev, unsigned int addr, unsigned int size, uint64_t value) "st7789v: %p reg: 0x%02x size: %d value: 0x%"PRIx64
