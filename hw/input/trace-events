@@ -58,3 +58,8 @@ virtio_input_queue_full(void) "queue full"
 lasips2_reg_read(unsigned int size, int id, uint64_t addr, const char *name, uint64_t val) "%u %d addr 0x%"PRIx64 "%s -> 0x%"PRIx64
 lasips2_reg_write(unsigned int size, int id, uint64_t addr, const char *name, uint64_t val) "%u %d addr 0x%"PRIx64 "%s <- 0x%"PRIx64
 lasips2_intr(unsigned int val) "%d"
+
+# gpio-keypad.c
+gpio_keypad_keyboard_event(const char *id, int qcode, int down) "%s qcode %d down %d"
+gpio_keypad_set_input(const char *id, uint32_t input) "%s input 0x%"PRIx32
+gpio_keypad_set_output(const char *id, uint32_t output) "%s output 0x%"PRIx32

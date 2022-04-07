@@ -46,3 +46,6 @@ config TSC210X
 
 config LASIPS2
     select PS2
+
+config GPIO_KEYPAD
+    bool

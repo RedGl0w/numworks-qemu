@@ -16,3 +16,4 @@ softmmu_ss.add(when: 'CONFIG_VHOST_USER_INPUT', if_true: files('vhost-user-input
 softmmu_ss.add(when: 'CONFIG_PXA2XX', if_true: files('pxa2xx_keypad.c'))
 softmmu_ss.add(when: 'CONFIG_TSC210X', if_true: files('tsc210x.c'))
 softmmu_ss.add(when: 'CONFIG_LASIPS2', if_true: files('lasips2.c'))
+softmmu_ss.add(when: 'CONFIG_GPIO_KEYPAD', if_true: files('gpio-keypad.c'))
