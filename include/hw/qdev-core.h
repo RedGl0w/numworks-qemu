@@ -686,6 +686,25 @@ static inline void qdev_init_gpio_in_named(DeviceState *dev,
 void qdev_pass_gpios(DeviceState *dev, DeviceState *container,
                      const char *name);
 
+/**
+ * qdev_pass_aliased_gpios: create GPIO lines on container which pass through to
+ *   device
+ * @dev: Device which has GPIO lines
+ * @dev_name: Name of GPIO array to pass from (NULL for the anonymous GPIO
+ *   array)
+ * @container: Container device which needs to expose them
+ * @container_name: Name of GPIO array to pass through (NULL for the anonymous
+ *   GPIO array)
+ *
+ * This function is similar to qdev_pass_gpios(), except that both the source
+ * device and the target container GPIOs can have different names. If the source
+ * GPIO lines have both input and output lines and the container name isn't
+ * NULL, the GPIO aliases will be suffixed with '-in' and '-out' to prevent
+ * naming conflicts.
+ */
+void qdev_pass_aliased_gpios(DeviceState *dev, const char *dev_name,
+                             DeviceState *container, const char *container_name);
+
 BusState *qdev_get_parent_bus(DeviceState *dev);
 
 /*** BUS API. ***/

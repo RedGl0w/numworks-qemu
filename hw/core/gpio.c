@@ -171,28 +171,55 @@ void qdev_connect_gpio_out(DeviceState *dev, int n, qemu_irq input_pin)
     qdev_connect_gpio_out_named(dev, NULL, n, input_pin);
 }
 
+static void alias_gpio(DeviceState *dev, const char *dev_name,
+                       DeviceState *container, const char *container_name,
+                       NamedGPIOList *ngl, int i, const char *suffix)
+{
+    char *dev_propname;
+    char *container_propname;
+
+    if (!dev_name) {
+        dev_propname = g_strdup_printf("unnamed-gpio-%s[%d]", suffix, i);
+    } else {
+        dev_propname = g_strdup_printf("%s[%d]", dev_name, i);
+    }
+
+    if (!container_name) {
+        container_propname = g_strdup_printf("unnamed-gpio-%s[%d]", suffix, i);
+    } else if (ngl->num_in > 0 && ngl->num_out > 0) {
+        container_propname = g_strdup_printf("%s-%s[%d]", container_name, suffix, i);
+    } else {
+        container_propname = g_strdup_printf("%s[%d]", container_name, i);
+    }
+
+    object_property_add_alias(OBJECT(container), container_propname,
+                              OBJECT(dev), dev_propname);
+    g_free(dev_propname);
+    g_free(container_propname);
+}
+
 void qdev_pass_gpios(DeviceState *dev, DeviceState *container,
                      const char *name)
 {
+    qdev_pass_aliased_gpios(dev, name, container, name);
+}
+
+void qdev_pass_aliased_gpios(DeviceState *dev, const char *dev_name,
+                             DeviceState *container, const char *container_name)
+{
     int i;
-    NamedGPIOList *ngl = qdev_get_named_gpio_list(dev, name);
+    NamedGPIOList *ngl = qdev_get_named_gpio_list(dev, dev_name);
 
     for (i = 0; i < ngl->num_in; i++) {
-        const char *nm = ngl->name ? ngl->name : "unnamed-gpio-in";
-        char *propname = g_strdup_printf("%s[%d]", nm, i);
-
-        object_property_add_alias(OBJECT(container), propname,
-                                  OBJECT(dev), propname);
-        g_free(propname);
+        alias_gpio(dev, dev_name, container, container_name, ngl, i, "in");
     }
+
     for (i = 0; i < ngl->num_out; i++) {
-        const char *nm = ngl->name ? ngl->name : "unnamed-gpio-out";
-        char *propname = g_strdup_printf("%s[%d]", nm, i);
-
-        object_property_add_alias(OBJECT(container), propname,
-                                  OBJECT(dev), propname);
-        g_free(propname);
+        alias_gpio(dev, dev_name, container, container_name, ngl, i, "out");
     }
+
+    g_free(ngl->name);
+    ngl->name = g_strdup(container_name);
     QLIST_REMOVE(ngl, node);
     QLIST_INSERT_HEAD(&container->gpios, ngl, node);
 }
