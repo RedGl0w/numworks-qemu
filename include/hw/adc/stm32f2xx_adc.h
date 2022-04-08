@@ -28,40 +28,7 @@
 #include "hw/sysbus.h"
 #include "qom/object.h"
 
-#define ADC_SR    0x00
-#define ADC_CR1   0x04
-#define ADC_CR2   0x08
-#define ADC_SMPR1 0x0C
-#define ADC_SMPR2 0x10
-#define ADC_JOFR1 0x14
-#define ADC_JOFR2 0x18
-#define ADC_JOFR3 0x1C
-#define ADC_JOFR4 0x20
-#define ADC_HTR   0x24
-#define ADC_LTR   0x28
-#define ADC_SQR1  0x2C
-#define ADC_SQR2  0x30
-#define ADC_SQR3  0x34
-#define ADC_JSQR  0x38
-#define ADC_JDR1  0x3C
-#define ADC_JDR2  0x40
-#define ADC_JDR3  0x44
-#define ADC_JDR4  0x48
-#define ADC_DR    0x4C
-
-#define ADC_CR2_ADON    0x01
-#define ADC_CR2_CONT    0x02
-#define ADC_CR2_ALIGN   0x800
-#define ADC_CR2_SWSTART 0x40000000
-
-#define ADC_CR1_RES 0x3000000
-
-#define ADC_COMMON_ADDRESS 0x100
-
-#define TYPE_STM32F2XX_ADC "stm32f2xx-adc"
-OBJECT_DECLARE_SIMPLE_TYPE(STM32F2XXADCState, STM32F2XX_ADC)
-
-struct STM32F2XXADCState {
+typedef struct STM32F2XXADCState {
     /* <private> */
     SysBusDevice parent_obj;
 
@@ -84,6 +51,10 @@ struct STM32F2XXADCState {
     uint32_t adc_dr;
 
     qemu_irq irq;
-};
+} STM32F2XXADCState;
+
+#define TYPE_STM32F2XX_ADC "stm32f2xx-adc"
+#define STM32F2XX_ADC(obj) \
+    OBJECT_CHECK(STM32F2XXADCState, (obj), TYPE_STM32F2XX_ADC)
 
 #endif /* HW_STM32F2XX_ADC_H */

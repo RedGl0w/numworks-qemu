@@ -28,18 +28,37 @@
 #include "qemu/log.h"
 #include "qemu/module.h"
 #include "hw/adc/stm32f2xx_adc.h"
+#include "trace.h"
 
-#ifndef STM_ADC_ERR_DEBUG
-#define STM_ADC_ERR_DEBUG 0
-#endif
+#define ADC_SR    0x00
+#define ADC_CR1   0x04
+#define ADC_CR2   0x08
+#define ADC_SMPR1 0x0C
+#define ADC_SMPR2 0x10
+#define ADC_JOFR1 0x14
+#define ADC_JOFR2 0x18
+#define ADC_JOFR3 0x1C
+#define ADC_JOFR4 0x20
+#define ADC_HTR   0x24
+#define ADC_LTR   0x28
+#define ADC_SQR1  0x2C
+#define ADC_SQR2  0x30
+#define ADC_SQR3  0x34
+#define ADC_JSQR  0x38
+#define ADC_JDR1  0x3C
+#define ADC_JDR2  0x40
+#define ADC_JDR3  0x44
+#define ADC_JDR4  0x48
+#define ADC_DR    0x4C
 
-#define DB_PRINT_L(lvl, fmt, args...) do { \
-    if (STM_ADC_ERR_DEBUG >= lvl) { \
-        qemu_log("%s: " fmt, __func__, ## args); \
-    } \
-} while (0)
+#define ADC_CR2_ADON    0x01
+#define ADC_CR2_CONT    0x02
+#define ADC_CR2_ALIGN   0x800
+#define ADC_CR2_SWSTART 0x40000000
 
-#define DB_PRINT(fmt, args...) DB_PRINT_L(1, fmt, ## args)
+#define ADC_CR1_RES 0x3000000
+
+#define ADC_COMMON_ADDRESS 0x100
 
 static void stm32f2xx_adc_reset(DeviceState *dev)
 {
@@ -101,25 +120,24 @@ static uint64_t stm32f2xx_adc_read(void *opaque, hwaddr addr,
                                      unsigned int size)
 {
     STM32F2XXADCState *s = opaque;
-
-    DB_PRINT("Address: 0x%" HWADDR_PRIx "\n", addr);
-
-    if (addr >= ADC_COMMON_ADDRESS) {
-        qemu_log_mask(LOG_UNIMP,
-                      "%s: ADC Common Register Unsupported\n", __func__);
-    }
+    uint32_t value = 0;
 
     switch (addr) {
     case ADC_SR:
-        return s->adc_sr;
+        value = s->adc_sr;
+        break;
     case ADC_CR1:
-        return s->adc_cr1;
+        value = s->adc_cr1;
+        break;
     case ADC_CR2:
-        return s->adc_cr2 & 0xFFFFFFF;
+        value = s->adc_cr2 & 0x0FFFFFFF;
+        break;
     case ADC_SMPR1:
-        return s->adc_smpr1;
+        value = s->adc_smpr1;
+        break;
     case ADC_SMPR2:
-        return s->adc_smpr2;
+        value = s->adc_smpr2;
+        break;
     case ADC_JOFR1:
     case ADC_JOFR2:
     case ADC_JOFR3:
@@ -127,22 +145,29 @@ static uint64_t stm32f2xx_adc_read(void *opaque, hwaddr addr,
         qemu_log_mask(LOG_UNIMP, "%s: " \
                       "Injection ADC is not implemented, the registers are " \
                       "included for compatibility\n", __func__);
-        return s->adc_jofr[(addr - ADC_JOFR1) / 4];
+        value = s->adc_jofr[(addr - ADC_JOFR1) / 4];
+        break;
     case ADC_HTR:
-        return s->adc_htr;
+        value = s->adc_htr;
+        break;
     case ADC_LTR:
-        return s->adc_ltr;
+        value = s->adc_ltr;
+        break;
     case ADC_SQR1:
-        return s->adc_sqr1;
+        value = s->adc_sqr1;
+        break;
     case ADC_SQR2:
-        return s->adc_sqr2;
+        value = s->adc_sqr2;
+        break;
     case ADC_SQR3:
-        return s->adc_sqr3;
+        value = s->adc_sqr3;
+        break;
     case ADC_JSQR:
         qemu_log_mask(LOG_UNIMP, "%s: " \
                       "Injection ADC is not implemented, the registers are " \
                       "included for compatibility\n", __func__);
-        return s->adc_jsqr;
+        value = s->adc_jsqr;
+        break;
     case ADC_JDR1:
     case ADC_JDR2:
     case ADC_JDR3:
@@ -150,21 +175,23 @@ static uint64_t stm32f2xx_adc_read(void *opaque, hwaddr addr,
         qemu_log_mask(LOG_UNIMP, "%s: " \
                       "Injection ADC is not implemented, the registers are " \
                       "included for compatibility\n", __func__);
-        return s->adc_jdr[(addr - ADC_JDR1) / 4] -
+        value = s->adc_jdr[(addr - ADC_JDR1) / 4] -
                s->adc_jofr[(addr - ADC_JDR1) / 4];
+        break;
     case ADC_DR:
         if ((s->adc_cr2 & ADC_CR2_ADON) && (s->adc_cr2 & ADC_CR2_SWSTART)) {
             s->adc_cr2 ^= ADC_CR2_SWSTART;
-            return stm32f2xx_adc_generate_value(s);
-        } else {
-            return 0;
+            value = stm32f2xx_adc_generate_value(s);
         }
+        break;
     default:
         qemu_log_mask(LOG_GUEST_ERROR,
                       "%s: Bad offset 0x%" HWADDR_PRIx "\n", __func__, addr);
+        break;
     }
 
-    return 0;
+    trace_stm32f2xx_adc_read(DEVICE(opaque)->canonical_path, addr, value);
+    return value;
 }
 
 static void stm32f2xx_adc_write(void *opaque, hwaddr addr,
@@ -173,13 +200,7 @@ static void stm32f2xx_adc_write(void *opaque, hwaddr addr,
     STM32F2XXADCState *s = opaque;
     uint32_t value = (uint32_t) val64;
 
-    DB_PRINT("Address: 0x%" HWADDR_PRIx ", Value: 0x%x\n",
-             addr, value);
-
-    if (addr >= 0x100) {
-        qemu_log_mask(LOG_UNIMP,
-                      "%s: ADC Common Register Unsupported\n", __func__);
-    }
+    trace_stm32f2xx_adc_write(DEVICE(opaque)->canonical_path, addr, value);
 
     switch (addr) {
     case ADC_SR:
@@ -239,6 +260,7 @@ static void stm32f2xx_adc_write(void *opaque, hwaddr addr,
     default:
         qemu_log_mask(LOG_GUEST_ERROR,
                       "%s: Bad offset 0x%" HWADDR_PRIx "\n", __func__, addr);
+        break;
     }
 }
 
@@ -292,17 +314,14 @@ static void stm32f2xx_adc_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_stm32f2xx_adc;
 }
 
-static const TypeInfo stm32f2xx_adc_info = {
-    .name          = TYPE_STM32F2XX_ADC,
-    .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(STM32F2XXADCState),
-    .instance_init = stm32f2xx_adc_init,
-    .class_init    = stm32f2xx_adc_class_init,
+static const TypeInfo stm32f2xx_adc_types[] = {
+    {
+        .name          = TYPE_STM32F2XX_ADC,
+        .parent        = TYPE_SYS_BUS_DEVICE,
+        .instance_size = sizeof(STM32F2XXADCState),
+        .instance_init = stm32f2xx_adc_init,
+        .class_init    = stm32f2xx_adc_class_init,
+    },
 };
 
-static void stm32f2xx_adc_register_types(void)
-{
-    type_register_static(&stm32f2xx_adc_info);
-}
-
-type_init(stm32f2xx_adc_register_types)
+DEFINE_TYPES(stm32f2xx_adc_types);
