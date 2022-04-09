@@ -50,6 +50,8 @@ typedef struct STM32F2XXADCState {
     uint32_t adc_jdr[4];
     uint32_t adc_dr;
 
+    uint32_t value;
+
     qemu_irq irq;
 } STM32F2XXADCState;
 

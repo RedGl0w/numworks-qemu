@@ -27,6 +27,7 @@
 #include "migration/vmstate.h"
 #include "qemu/log.h"
 #include "qemu/module.h"
+#include "hw/qdev-properties.h"
 #include "hw/adc/stm32f2xx_adc.h"
 #include "trace.h"
 
@@ -51,6 +52,7 @@
 #define ADC_JDR4  0x48
 #define ADC_DR    0x4C
 
+#define ADC_SR_EOC      0x02
 #define ADC_CR2_ADON    0x01
 #define ADC_CR2_CONT    0x02
 #define ADC_CR2_ALIGN   0x800
@@ -83,14 +85,11 @@ static void stm32f2xx_adc_reset(DeviceState *dev)
     s->adc_jdr[1] = 0x00000000;
     s->adc_jdr[2] = 0x00000000;
     s->adc_jdr[3] = 0x00000000;
-    s->adc_dr = 0x00000000;
+    s->adc_dr = s->value;
 }
 
 static uint32_t stm32f2xx_adc_generate_value(STM32F2XXADCState *s)
 {
-    /* Attempts to fake some ADC values */
-    s->adc_dr = s->adc_dr + 7;
-
     switch ((s->adc_cr1 & ADC_CR1_RES) >> 24) {
     case 0:
         /* 12-bit */
@@ -183,6 +182,7 @@ static uint64_t stm32f2xx_adc_read(void *opaque, hwaddr addr,
             s->adc_cr2 ^= ADC_CR2_SWSTART;
             value = stm32f2xx_adc_generate_value(s);
         }
+        s->adc_sr &= ~(ADC_SR_EOC);
         break;
     default:
         qemu_log_mask(LOG_GUEST_ERROR,
@@ -211,6 +211,9 @@ static void stm32f2xx_adc_write(void *opaque, hwaddr addr,
         break;
     case ADC_CR2:
         s->adc_cr2 = value;
+        if (value & (ADC_CR2_SWSTART)) {
+            s->adc_sr |= (ADC_SR_EOC);
+        }
         break;
     case ADC_SMPR1:
         s->adc_smpr1 = value;
@@ -306,12 +309,19 @@ static void stm32f2xx_adc_init(Object *obj)
     sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->mmio);
 }
 
+
+static Property stm32f2xx_adc_properties[] = {
+    DEFINE_PROP_UINT32("value", STM32F2XXADCState, value, 0),
+    DEFINE_PROP_END_OF_LIST(),
+};
+
 static void stm32f2xx_adc_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->reset = stm32f2xx_adc_reset;
     dc->vmsd = &vmstate_stm32f2xx_adc;
+    device_class_set_props(dc, stm32f2xx_adc_properties);
 }
 
 static const TypeInfo stm32f2xx_adc_types[] = {
