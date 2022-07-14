@@ -32,3 +32,7 @@ sifive_gpio_update_output_irq(int64_t line, int64_t value) "line %" PRIi64 " val
 stm32f2xx_gpio_read(const char *id, uint64_t offset, uint64_t r) " %s offset 0x%" PRIx64 " value 0x%" PRIx64
 stm32f2xx_gpio_write(const char *id, uint64_t offset, uint64_t value) " %s offset 0x%" PRIx64 " value 0x%" PRIx64
 stm32f2xx_gpio_update_pins(const char *id, int offset, int r) " %s set output pin %d to %d"
+
+# aspeed_gpio.c
+aspeed_gpio_read(uint64_t offset, uint64_t value) "offset: 0x%" PRIx64 " value 0x%" PRIx64
+aspeed_gpio_write(uint64_t offset, uint64_t value) "offset: 0x%" PRIx64 " value 0x%" PRIx64

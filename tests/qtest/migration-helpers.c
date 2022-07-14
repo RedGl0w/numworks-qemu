@@ -15,6 +15,14 @@
 
 #include "migration-helpers.h"
 
+/*
+ * Number of seconds we wait when looking for migration
+ * status changes, to avoid test suite hanging forever
+ * when things go wrong. Needs to be higher enough to
+ * avoid false positives on loaded hosts.
+ */
+#define MIGRATION_STATUS_WAIT_TIMEOUT 120
+
 bool got_stop;
 
 static void check_stop_event(QTestState *who)
@@ -107,6 +115,19 @@ QDict *migrate_query(QTestState *who)
     return wait_command(who, "{ 'execute': 'query-migrate' }");
 }
 
+QDict *migrate_query_not_failed(QTestState *who)
+{
+    const char *status;
+    QDict *rsp = migrate_query(who);
+    status = qdict_get_str(rsp, "status");
+    if (g_str_equal(status, "failed")) {
+        g_printerr("query-migrate shows failed migration: %s\n",
+                   qdict_get_str(rsp, "error-desc"));
+    }
+    g_assert(!g_str_equal(status, "failed"));
+    return rsp;
+}
+
 /*
  * Note: caller is responsible to free the returned object via
  * g_free() after use
@@ -153,8 +174,11 @@ static bool check_migration_status(QTestState *who, const char *goal,
 void wait_for_migration_status(QTestState *who,
                                const char *goal, const char **ungoals)
 {
+    g_test_timer_start();
     while (!check_migration_status(who, goal, ungoals)) {
         usleep(1000);
+
+        g_assert(g_test_timer_elapsed() < MIGRATION_STATUS_WAIT_TIMEOUT);
     }
 }
 
@@ -165,6 +189,7 @@ void wait_for_migration_complete(QTestState *who)
 
 void wait_for_migration_fail(QTestState *from, bool allow_active)
 {
+    g_test_timer_start();
     QDict *rsp_return;
     char *status;
     bool failed;
@@ -180,6 +205,8 @@ void wait_for_migration_fail(QTestState *from, bool allow_active)
         g_assert(result);
         failed = !strcmp(status, "failed");
         g_free(status);
+
+        g_assert(g_test_timer_elapsed() < MIGRATION_STATUS_WAIT_TIMEOUT);
     } while (!failed);
 
     /* Is the machine currently running? */

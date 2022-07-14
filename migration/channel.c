@@ -14,7 +14,7 @@
 #include "channel.h"
 #include "tls.h"
 #include "migration.h"
-#include "qemu-file-channel.h"
+#include "qemu-file.h"
 #include "trace.h"
 #include "qapi/error.h"
 #include "io/channel-tls.h"
@@ -38,8 +38,7 @@ void migration_channel_process_incoming(QIOChannel *ioc)
     trace_migration_set_incoming_channel(
         ioc, object_get_typename(OBJECT(ioc)));
 
-    if (s->parameters.tls_creds &&
-        *s->parameters.tls_creds &&
+    if (migrate_use_tls() &&
         !object_dynamic_cast(OBJECT(ioc),
                              TYPE_QIO_CHANNEL_TLS)) {
         migration_tls_channel_process_incoming(s, ioc, &local_err);
@@ -86,7 +85,7 @@ void migration_channel_connect(MigrationState *s,
                 return;
             }
         } else {
-            QEMUFile *f = qemu_fopen_channel_output(ioc);
+            QEMUFile *f = qemu_file_new_output(ioc);
 
             migration_ioc_register_yank(ioc);
 
@@ -96,6 +95,5 @@ void migration_channel_connect(MigrationState *s,
         }
     }
     migrate_fd_connect(s, error);
-    g_free(s->hostname);
     error_free(error);
 }
