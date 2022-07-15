@@ -344,6 +344,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     create_unimplemented_device("DCMI",        0x50050000, 0x400);
     create_unimplemented_device("RNG",         0x50060800, 0x400);
     create_unimplemented_device("FSMC",        0xA0000000, 0x1000);
+    create_unimplemented_device("DES",         0x1FFF7A10, 0x200); // Device Electronic Signature
 }
 
 static Property stm32f4xx_soc_properties[] = {
