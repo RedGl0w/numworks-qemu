@@ -206,6 +206,8 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     if (!sysbus_realize(SYS_BUS_DEVICE(&s->rcc), errp)) {
         return;
     }
+    s->rcc.refclk = s->refclk;
+
     busdev = SYS_BUS_DEVICE(dev);
     sysbus_mmio_map(busdev, 0, RCC_ADD);
 

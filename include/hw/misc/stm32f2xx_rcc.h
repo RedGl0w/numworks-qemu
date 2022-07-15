@@ -43,6 +43,8 @@ struct STM32F2XXRccState {
 
     uint32_t rcc_cr;
     uint32_t rcc_cfgr;
+    
+    Clock * refclk;
 };
 
 #endif

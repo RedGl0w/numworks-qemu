@@ -27,6 +27,7 @@
 #include "qemu/log.h"
 #include "qemu/module.h"
 #include "trace.h"
+#include "hw/qdev-clock.h"
 
 static void stm32f2xx_rcc_reset(DeviceState *dev)
 {
@@ -77,9 +78,20 @@ static void stm32f2xx_rcc_write(void *opaque, hwaddr addr,
         s->rcc_cr = value;
         break;
     case RCC_CFGR:
+        uint8_t AHBPrescalar = (value & 240) >> 4;
+
         value &= ~0xC;
         value |= (value & 0x3) << 2;
         s->rcc_cfgr = value;
+
+        if (AHBPrescalar == 0) {
+            clock_set_mul_div(s->refclk, 8, 1);
+        } else if (AHBPrescalar == 9) {
+            clock_set_mul_div(s->refclk, 32, 1);
+        } else {
+            qemu_log_mask(LOG_UNIMP, "%s : Unimplemented AHBPrescalar\n", __func__);
+        }
+        clock_propagate(s->refclk->source->source);
         break;
     default:
         qemu_log_mask(LOG_UNIMP,
