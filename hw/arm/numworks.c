@@ -50,11 +50,11 @@ static const GpioKeypadKey n0100_keys[] = {
     { 0, 1, Q_KEY_CODE_HOME },
     { 1, 1, Q_KEY_CODE_END },
 
-    { 0, 2, Q_KEY_CODE_1 },
-    { 1, 2, Q_KEY_CODE_2 },
+    { 0, 2, Q_KEY_CODE_SHIFT },
+    { 1, 2, Q_KEY_CODE_ALT },
     { 2, 2, Q_KEY_CODE_3 },
     { 3, 2, Q_KEY_CODE_4 },
-    { 4, 2, Q_KEY_CODE_5 },
+    { 4, 2, Q_KEY_CODE_TAB },
     { 5, 2, Q_KEY_CODE_BACKSPACE },
 
     { 0, 3, Q_KEY_CODE_A },
