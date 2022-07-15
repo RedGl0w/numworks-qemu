@@ -1,4 +1,15 @@
 ===========
+Numworks QEMU Readme
+===========
+This fork of qemu is created in order to support numworks' calculators emulation. This was made possible at the first time by boricj, and is still in WIP.
+
+To run the emulator :
+```
+./arm-softmmu/qemu-system-arm -M n0100 -kernel path/to/epsilon.elf
+```
+
+
+===========
 QEMU README
 ===========
 
