@@ -129,6 +129,8 @@ struct ST7789VState {
     uint16_t ys;
     uint16_t ye;
 
+    uint16_t memory_read_step;
+
     int col;
     int row;
 };

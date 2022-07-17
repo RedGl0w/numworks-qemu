@@ -306,6 +306,46 @@ static uint64_t st7789v_read(void *opaque, hwaddr addr, unsigned int size)
             value = 0;
             break;
 
+        case ST7789V_STATE_READ_MEMORY:
+            int x,y;
+            assert(s->ctrl_fmt == 0b110); // Reading memory should always be done in 18bits/pixel
+            switch (s->memory_read_step) {
+                case 0:
+                    if (st7789v_compute_offset(s, &x, &y)) {
+                        uint32_t color32 = s->vram[y * s->width + x];
+                        int r = color32 >> 16;
+                        int g = (color32 >> 8) & 0xFF;
+                        value = (r << 8) | g;
+                        s->memory_read_step += 1;
+                    }
+                    break;
+                case 1:
+                    if (st7789v_compute_offset(s, &x, &y)) {
+                        uint32_t color32 = s->vram[y * s->width + x];
+                        int b = color32 & 0xFF;
+                        value = b << 8;
+                    }
+                    st7789v_postop(s);
+                    if (st7789v_compute_offset(s, &x, &y)) {
+                        uint32_t color32 = s->vram[y * s->width + x];
+                        int r = color32 >> 16;
+                        value |= r;
+                    }
+                    s->memory_read_step += 1;
+                    break;
+                case 2:
+                    if (st7789v_compute_offset(s, &x, &y)) {
+                        uint32_t color32 = s->vram[y * s->width + x];
+                        int g = (color32 >> 8) & 0xFF;
+                        int b = color32 & 0xFF;
+                        value = (g << 8) | b;
+                    }
+                    s->memory_read_step = 0;
+                    st7789v_postop(s);
+                    break;
+            }
+            break;
+
         default:
             value = 0;
             break;
@@ -404,6 +444,7 @@ static void st7789v_write(void *opaque, hwaddr addr, uint64_t val64,
             s->state = ST7789V_STATE_READ_MEMORY;
             s->col = s->xs;
             s->row = s->ys;
+            s->memory_read_step = 0;
             break;
         case ST7789V_TEARING_EFFECT_LINE_OFF:
             s->teon = false;
@@ -574,6 +615,8 @@ static void st7789v_init(Object *obj)
 
     s->xs = 0;
     s->xe = 0xEF;
+
+    s->memory_read_step = 0;
 
     memory_region_init_io(&s->mmio, obj, &st7789v_mmio_ops, s, TYPE_ST7789V,
                           0x40000);
