@@ -40,60 +40,60 @@
 #define ST7789V_ADD 0x60000000
 
 static const GpioKeypadKey n0100_keys[] = {
-    { 0, 0, Q_KEY_CODE_LEFT },
-    { 1, 0, Q_KEY_CODE_UP },
-    { 2, 0, Q_KEY_CODE_DOWN },
-    { 3, 0, Q_KEY_CODE_RIGHT },
-    { 4, 0, Q_KEY_CODE_RET },
-    { 5, 0, Q_KEY_CODE_ESC },
+    { 0, 0, Q_KEY_CODE_LEFT }, // Key::Left
+    { 1, 0, Q_KEY_CODE_UP }, // Key::Up
+    { 2, 0, Q_KEY_CODE_DOWN }, // Key::Down
+    { 3, 0, Q_KEY_CODE_RIGHT }, // Key::Right
+    { 4, 0, Q_KEY_CODE_RET }, // Key::Ok
+    { 5, 0, Q_KEY_CODE_ESC }, // Key::Back
 
-    { 0, 1, Q_KEY_CODE_HOME },
-    { 1, 1, Q_KEY_CODE_END },
+    { 0, 1, Q_KEY_CODE_HOME }, // Key::Home
+    { 1, 1, Q_KEY_CODE_END }, // Key::OnOff
 
-    { 0, 2, Q_KEY_CODE_SHIFT },
-    { 1, 2, Q_KEY_CODE_ALT },
-    { 2, 2, Q_KEY_CODE_3 },
-    { 3, 2, Q_KEY_CODE_4 },
-    { 4, 2, Q_KEY_CODE_TAB },
-    { 5, 2, Q_KEY_CODE_BACKSPACE },
+    { 0, 2, Q_KEY_CODE_SHIFT }, // Key::Shift
+    { 1, 2, Q_KEY_CODE_ALT }, // Key::Alpha
+    { 2, 2, Q_KEY_CODE_3 }, // Key::XNT
+    { 3, 2, Q_KEY_CODE_4 }, // Key::Var
+    { 4, 2, Q_KEY_CODE_TAB }, // Key::Toolbox
+    { 5, 2, Q_KEY_CODE_BACKSPACE }, // Key::Backspace
 
-    { 0, 3, Q_KEY_CODE_A },
-    { 1, 3, Q_KEY_CODE_B },
-    { 2, 3, Q_KEY_CODE_C },
-    { 3, 3, Q_KEY_CODE_D },
-    { 4, 3, Q_KEY_CODE_E },
-    { 5, 3, Q_KEY_CODE_F },
+    { 0, 3, Q_KEY_CODE_A }, // Key::Exp
+    { 1, 3, Q_KEY_CODE_B }, // Key::Ln
+    { 2, 3, Q_KEY_CODE_C }, // Key::Log
+    { 3, 3, Q_KEY_CODE_D }, // Key::Imaginary
+    { 4, 3, Q_KEY_CODE_E }, // Key::Comma
+    { 5, 3, Q_KEY_CODE_F }, // Key::Power
 
-    { 0, 4, Q_KEY_CODE_G },
-    { 1, 4, Q_KEY_CODE_H },
-    { 2, 4, Q_KEY_CODE_I },
-    { 3, 4, Q_KEY_CODE_J },
-    { 4, 4, Q_KEY_CODE_K },
-    { 5, 4, Q_KEY_CODE_L },
+    { 0, 4, Q_KEY_CODE_G }, // Key::Sine
+    { 1, 4, Q_KEY_CODE_H }, // Key::Cosine
+    { 2, 4, Q_KEY_CODE_I }, // Key::Tangent
+    { 3, 4, Q_KEY_CODE_J }, // Key::Pi
+    { 4, 4, Q_KEY_CODE_K }, // Key::Sqrt
+    { 5, 4, Q_KEY_CODE_L }, // Key::Square
 
-    { 0, 5, Q_KEY_CODE_M }, { 0, 5, Q_KEY_CODE_KP_7 },
-    { 1, 5, Q_KEY_CODE_N }, { 1, 5, Q_KEY_CODE_KP_8 },
-    { 2, 5, Q_KEY_CODE_O }, { 2, 5, Q_KEY_CODE_KP_9 },
-    { 3, 5, Q_KEY_CODE_P },
-    { 4, 5, Q_KEY_CODE_Q },
+    { 0, 5, Q_KEY_CODE_M }, { 0, 5, Q_KEY_CODE_KP_7 }, // Key::Seven
+    { 1, 5, Q_KEY_CODE_N }, { 1, 5, Q_KEY_CODE_KP_8 }, // Key::Eight
+    { 2, 5, Q_KEY_CODE_O }, { 2, 5, Q_KEY_CODE_KP_9 }, // Key::Nine
+    { 3, 5, Q_KEY_CODE_P }, // Key::LeftParenthesis
+    { 4, 5, Q_KEY_CODE_Q }, // Key::RightParenthesis
 
-    { 0, 6, Q_KEY_CODE_R }, { 0, 6, Q_KEY_CODE_KP_4 },
-    { 1, 6, Q_KEY_CODE_S }, { 1, 6, Q_KEY_CODE_KP_5 },
-    { 2, 6, Q_KEY_CODE_T }, { 2, 6, Q_KEY_CODE_KP_6 },
-    { 3, 6, Q_KEY_CODE_U }, { 3, 6, Q_KEY_CODE_KP_MULTIPLY },
-    { 4, 6, Q_KEY_CODE_V }, { 4, 6, Q_KEY_CODE_KP_DIVIDE },
+    { 0, 6, Q_KEY_CODE_R }, { 0, 6, Q_KEY_CODE_KP_4 }, // Key::Four
+    { 1, 6, Q_KEY_CODE_S }, { 1, 6, Q_KEY_CODE_KP_5 }, // Key::Five
+    { 2, 6, Q_KEY_CODE_T }, { 2, 6, Q_KEY_CODE_KP_6 }, // Key::Six
+    { 3, 6, Q_KEY_CODE_U }, { 3, 6, Q_KEY_CODE_KP_MULTIPLY }, // Key::Multiplication
+    { 4, 6, Q_KEY_CODE_V }, { 4, 6, Q_KEY_CODE_KP_DIVIDE }, // Key::Division
 
-    { 0, 7, Q_KEY_CODE_W }, { 0, 7, Q_KEY_CODE_KP_1 },
-    { 1, 7, Q_KEY_CODE_X }, { 1, 7, Q_KEY_CODE_KP_2 },
-    { 2, 7, Q_KEY_CODE_Y }, { 2, 7, Q_KEY_CODE_KP_3 },
-    { 3, 7, Q_KEY_CODE_Z }, { 3, 7, Q_KEY_CODE_KP_ADD },
-    { 4, 7, Q_KEY_CODE_SPC }, { 4, 7, Q_KEY_CODE_KP_SUBTRACT },
+    { 0, 7, Q_KEY_CODE_W }, { 0, 7, Q_KEY_CODE_KP_1 }, // Key::One
+    { 1, 7, Q_KEY_CODE_X }, { 1, 7, Q_KEY_CODE_KP_2 }, // Key::Two
+    { 2, 7, Q_KEY_CODE_Y }, { 2, 7, Q_KEY_CODE_KP_3 }, // Key::Three
+    { 3, 7, Q_KEY_CODE_Z }, { 3, 7, Q_KEY_CODE_KP_ADD }, // Key::Plus
+    { 4, 7, Q_KEY_CODE_SPC }, { 4, 7, Q_KEY_CODE_KP_SUBTRACT }, // Key::Minus
 
-    { 0, 8, Q_KEY_CODE_KP_0 },
-    { 1, 8, Q_KEY_CODE_KP_DECIMAL },
-    { 2, 8, Q_KEY_CODE_9 },
-    { 3, 8, Q_KEY_CODE_0 },
-    { 4, 8, Q_KEY_CODE_KP_ENTER },
+    { 0, 8, Q_KEY_CODE_KP_0 }, // Key::Zero
+    { 1, 8, Q_KEY_CODE_KP_DECIMAL }, // Key::Dot
+    { 2, 8, Q_KEY_CODE_9 }, // Key::EE
+    { 3, 8, Q_KEY_CODE_0 }, // Key::Ans
+    { 4, 8, Q_KEY_CODE_KP_ENTER }, // Key::Exe
 
     { 0, 0, Q_KEY_CODE_UNMAPPED },
 };
