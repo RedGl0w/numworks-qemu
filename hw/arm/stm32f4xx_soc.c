@@ -31,6 +31,7 @@
 #include "hw/misc/unimp.h"
 
 #define RCC_ADD                        0x40023800
+#define CRC_ADD                        0x40023000 
 #define SYSCFG_ADD                     0x40013800
 #define USB_OTG_FS_ADD                 0x50000000
 
@@ -89,6 +90,9 @@ static void stm32f4xx_soc_initfn(Object *obj)
     object_initialize_child(obj, "armv7m", &s->armv7m, TYPE_ARMV7M);
 
     object_initialize_child(obj, "rcc", &s->rcc, TYPE_STM32F2XX_RCC);
+
+    object_initialize_child(obj, "crc", &s->crc, TYPE_STM32F2XX_CRC);
+
     object_initialize_child(obj, "syscfg", &s->syscfg, TYPE_STM32F2XX_SYSCFG);
 
     for (i = 0; i < STM_NUM_GPIOS; i++) {
@@ -210,6 +214,15 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
 
     busdev = SYS_BUS_DEVICE(dev);
     sysbus_mmio_map(busdev, 0, RCC_ADD);
+
+    /* Cyclic Redundancy Check */
+    dev = DEVICE(&s->crc);
+    if (!sysbus_realize(SYS_BUS_DEVICE(&s->crc), errp)) {
+        return;
+    }
+
+    busdev = SYS_BUS_DEVICE(dev);
+    sysbus_mmio_map(busdev, 0, CRC_ADD);
 
     /* System configuration controller */
     dev = DEVICE(&s->syscfg);
@@ -336,7 +349,6 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     create_unimplemented_device("timer[9]",    0x40014000, 0x400);
     create_unimplemented_device("timer[10]",   0x40014400, 0x400);
     create_unimplemented_device("timer[11]",   0x40014800, 0x400);
-    create_unimplemented_device("CRC",         0x40023000, 0x400);
     create_unimplemented_device("Flash Int",   0x40023C00, 0x400);
     create_unimplemented_device("BKPSRAM",     0x40024000, 0x400);
     create_unimplemented_device("DMA1",        0x40026000, 0x400);

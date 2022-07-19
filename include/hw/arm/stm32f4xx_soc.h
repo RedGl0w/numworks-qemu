@@ -27,6 +27,7 @@
 
 #include "hw/gpio/stm32f2xx_gpio.h"
 #include "hw/misc/stm32f2xx_rcc.h"
+#include "hw/misc/stm32f2xx_crc.h"
 #include "hw/misc/stm32f2xx_syscfg.h"
 #include "hw/misc/stm32f2xx_usb_otg_fs.h"
 #include "hw/timer/stm32f2xx_timer.h"
@@ -70,6 +71,7 @@ struct STM32F4XXState {
 
     STM32F2xxGpioState gpio[STM_NUM_GPIOS];
     STM32F2XXRccState rcc;
+    STM32F2XXCrcState crc;
     STM32F2XXSyscfgState syscfg;
     STM32F4xxExtiState exti;
     STM32F2XXUsartState usart[STM_NUM_USARTS];

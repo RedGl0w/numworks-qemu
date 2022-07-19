@@ -369,6 +369,7 @@ config STM32F4XX_SOC
     select OR_IRQ
     select STM32F2XX_GPIO
     select STM32F2XX_RCC
+    select STM32F2XX_CRC
     select STM32F2XX_SYSCFG
     select STM32F2XX_USB_OTG_FS
     select STM32F4XX_EXTI
