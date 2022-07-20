@@ -310,7 +310,11 @@ static uint64_t st7789v_read(void *opaque, hwaddr addr, unsigned int size)
             int x,y;
             assert(s->ctrl_fmt == 0b110); // Reading memory should always be done in 18bits/pixel
             switch (s->memory_read_step) {
-                case 0:
+                case DUMMY_TRANSFER:
+                    value=0b00101100;
+                    s->memory_read_step +=1;
+                    break;
+                case FIRST_TRANSACTION:
                     if (st7789v_compute_offset(s, &x, &y)) {
                         uint32_t color32 = s->vram[y * s->width + x];
                         int r = color32 >> 16;
@@ -319,7 +323,7 @@ static uint64_t st7789v_read(void *opaque, hwaddr addr, unsigned int size)
                         s->memory_read_step += 1;
                     }
                     break;
-                case 1:
+                case SECOND_TRANSACTION:
                     if (st7789v_compute_offset(s, &x, &y)) {
                         uint32_t color32 = s->vram[y * s->width + x];
                         int b = color32 & 0xFF;
@@ -333,14 +337,14 @@ static uint64_t st7789v_read(void *opaque, hwaddr addr, unsigned int size)
                     }
                     s->memory_read_step += 1;
                     break;
-                case 2:
+                case THIRD_TRANSACTION:
                     if (st7789v_compute_offset(s, &x, &y)) {
                         uint32_t color32 = s->vram[y * s->width + x];
                         int g = (color32 >> 8) & 0xFF;
                         int b = color32 & 0xFF;
                         value = (g << 8) | b;
                     }
-                    s->memory_read_step = 0;
+                    s->memory_read_step = FIRST_TRANSACTION;
                     st7789v_postop(s);
                     break;
             }
@@ -444,7 +448,7 @@ static void st7789v_write(void *opaque, hwaddr addr, uint64_t val64,
             s->state = ST7789V_STATE_READ_MEMORY;
             s->col = s->xs;
             s->row = s->ys;
-            s->memory_read_step = 0;
+            s->memory_read_step = DUMMY_TRANSFER;
             break;
         case ST7789V_TEARING_EFFECT_LINE_OFF:
             s->teon = false;
@@ -616,7 +620,7 @@ static void st7789v_init(Object *obj)
     s->xs = 0;
     s->xe = 0xEF;
 
-    s->memory_read_step = 0;
+    s->memory_read_step = DUMMY_TRANSFER;
 
     memory_region_init_io(&s->mmio, obj, &st7789v_mmio_ops, s, TYPE_ST7789V,
                           0x40000);

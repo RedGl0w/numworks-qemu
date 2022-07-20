@@ -83,6 +83,13 @@ typedef enum ST7789VStateMachine {
     ST7789V_STATE_WRITE_MEMORY,
 } ST7789VStateMachine;
 
+typedef enum MemoryReadSteps {
+    DUMMY_TRANSFER,
+    FIRST_TRANSACTION,
+    SECOND_TRANSACTION,
+    THIRD_TRANSACTION,
+} MemoryReadSteps;
+
 struct ST7789VState {
     SysBusDevice parent_obj;
 
@@ -129,7 +136,7 @@ struct ST7789VState {
     uint16_t ys;
     uint16_t ye;
 
-    uint16_t memory_read_step;
+    MemoryReadSteps memory_read_step;
 
     int col;
     int row;
