@@ -68,6 +68,7 @@ static void stm32f2xx_usb_otg_fs_write(void *opaque, hwaddr addr,
         value &= 0x000007F7;
         /* Simulate core soft reset. */
         value &= ~(1u << 0);
+        value |= 0x80000000;
         s->grstctl = value;
         break;
     default:
