@@ -278,6 +278,10 @@ stm32f2xx_rcc_write(void *dev, unsigned int addr, unsigned int size, uint64_t va
 stm32f2xx_crc_read(void *dev, unsigned int addr, unsigned int size, uint64_t value) "crc: %p reg: 0x%02x size: %d value: 0x%"PRIx64
 stm32f2xx_crc_write(void *dev, unsigned int addr, unsigned int size, uint64_t value) "crc: %p reg: 0x%02x size: %d value: 0x%"PRIx64
 
+# stm32f2xx_rng.c
+stm32f2xx_rng_read(void *dev, unsigned int addr, unsigned int size, uint64_t value) "rng: %p reg: 0x%02x size: %d value: 0x%"PRIx64
+stm32f2xx_rng_write(void *dev, unsigned int addr, unsigned int size, uint64_t value) "rng: %p reg: 0x%02x size: %d value: 0x%"PRIx64
+
 # stm32f2xx_usb_otg_fs.c
 stm32f2xx_usb_otg_fs_read(void *dev, unsigned int addr, unsigned int size, uint64_t value) "usb_otg_fs: %p reg: 0x%02x size: %d value: 0x%"PRIx64
 stm32f2xx_usb_otg_fs_write(void *dev, unsigned int addr, unsigned int size, uint64_t value) "usb_otg_fs: %p reg: 0x%02x size: %d value: 0x%"PRIx64

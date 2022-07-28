@@ -31,7 +31,8 @@
 #include "hw/misc/unimp.h"
 
 #define RCC_ADD                        0x40023800
-#define CRC_ADD                        0x40023000 
+#define CRC_ADD                        0x40023000
+#define RNG_ADD                        0x50060800
 #define SYSCFG_ADD                     0x40013800
 #define USB_OTG_FS_ADD                 0x50000000
 
@@ -92,6 +93,8 @@ static void stm32f4xx_soc_initfn(Object *obj)
     object_initialize_child(obj, "rcc", &s->rcc, TYPE_STM32F2XX_RCC);
 
     object_initialize_child(obj, "crc", &s->crc, TYPE_STM32F2XX_CRC);
+
+    object_initialize_child(obj, "rng", &s->rng, TYPE_STM32F2XX_RNG);
 
     object_initialize_child(obj, "syscfg", &s->syscfg, TYPE_STM32F2XX_SYSCFG);
 
@@ -223,6 +226,15 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
 
     busdev = SYS_BUS_DEVICE(dev);
     sysbus_mmio_map(busdev, 0, CRC_ADD);
+
+    /* Random Number Generation */
+    dev = DEVICE(&s->rng);
+    if (!sysbus_realize(SYS_BUS_DEVICE(&s->rng), errp)) {
+        return;
+    }
+
+    busdev = SYS_BUS_DEVICE(dev);
+    sysbus_mmio_map(busdev, 0, RNG_ADD);
 
     /* System configuration controller */
     dev = DEVICE(&s->syscfg);

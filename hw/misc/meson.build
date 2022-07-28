@@ -93,6 +93,7 @@ softmmu_ss.add(when: 'CONFIG_XLNX_VERSAL', if_true: files(
 ))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_RCC', if_true: files('stm32f2xx_rcc.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_CRC', if_true: files('stm32f2xx_crc.c'))
+softmmu_ss.add(when: 'CONFIG_STM32F2XX_RNG', if_true: files('stm32f2xx_rng.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_SYSCFG', if_true: files('stm32f2xx_syscfg.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_USB_OTG_FS', if_true: files('stm32f2xx_usb_otg_fs.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F4XX_EXTI', if_true: files('stm32f4xx_exti.c'))

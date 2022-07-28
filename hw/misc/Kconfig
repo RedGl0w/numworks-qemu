@@ -83,6 +83,9 @@ config STM32F2XX_RCC
 config STM32F2XX_CRC
     bool
 
+config STM32F2XX_RNG
+    bool
+
 config STM32F2XX_SYSCFG
     bool
 

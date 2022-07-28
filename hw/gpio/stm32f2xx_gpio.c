@@ -133,7 +133,6 @@ static void stm32f2xx_gpio_regs_write(void *opaque, hwaddr addr, uint64_t v,
                       "%s: write to read-only register @ 0x%" HWADDR_PRIx "\n",
                       DEVICE(s)->canonical_path, addr);
         break;
-
     default:
         qemu_log_mask(LOG_GUEST_ERROR,
                       "%s: write to invalid offset 0x%" HWADDR_PRIx "\n",
