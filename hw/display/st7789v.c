@@ -306,7 +306,7 @@ static uint64_t st7789v_read(void *opaque, hwaddr addr, unsigned int size)
             value = 0;
             break;
 
-        case ST7789V_STATE_READ_MEMORY:
+        case ST7789V_STATE_READ_MEMORY: ;
             int x,y;
             assert(s->ctrl_fmt == 0b110); // Reading memory should always be done in 18bits/pixel
             switch (s->memory_read_step) {
