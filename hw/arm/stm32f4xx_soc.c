@@ -196,7 +196,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     memory_region_add_subregion(system_memory, STM32f4XX_SRAM_BASE_ADDRESS, &s->sram);
 
     armv7m = DEVICE(&s->armv7m);
-    qdev_prop_set_uint32(armv7m, "init-nsvtor", STM32F412_SOC_FLASH_SIZE);
+    qdev_prop_set_uint32(armv7m, "init-nsvtor", STM32f4XX_FLASH_BASE_ADDRESS);
     qdev_prop_set_uint32(armv7m, "num-irq", 96);
     qdev_prop_set_string(armv7m, "cpu-type", ARM_CPU_TYPE_NAME("cortex-m4"));
     qdev_prop_set_bit(armv7m, "enable-bitband", true);
