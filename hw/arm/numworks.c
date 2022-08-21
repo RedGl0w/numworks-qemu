@@ -33,13 +33,14 @@
 #include "hw/arm/boot.h"
 #include "hw/input/gpio-keypad.h"
 #include "hw/display/st7789v.h"
+#include "hw/arm/numworks.h"
 
 /* Main SYSCLK frequency in Hz (100MHz) */
 #define SYSCLK_FRQ 100000000ULL
 
 #define ST7789V_ADD 0x60000000
 
-static const GpioKeypadKey n0100_keys[] = {
+static const GpioKeypadKey numworks_keys[] = { // FIX ME : This isn't shared by both models
     { 0, 0, Q_KEY_CODE_LEFT }, // Key::Left
     { 1, 0, Q_KEY_CODE_UP }, // Key::Up
     { 2, 0, Q_KEY_CODE_DOWN }, // Key::Down
@@ -98,8 +99,10 @@ static const GpioKeypadKey n0100_keys[] = {
     { 0, 0, Q_KEY_CODE_UNMAPPED },
 };
 
-static void n0100_init(MachineState *machine)
+static void numworks_init(MachineState *machine)
 {
+    NumworksState *s = NUMWORKS(machine);
+    NumworksClass *sc = NUMWORKS_GET_CLASS(s);
     DeviceState *soc;
     DeviceState *gpio;
     DeviceState *dev;
@@ -110,8 +113,9 @@ static void n0100_init(MachineState *machine)
     sysclk = clock_new(OBJECT(machine), "SYSCLK");
     clock_set_hz(sysclk, SYSCLK_FRQ);
 
-    soc = qdev_new(TYPE_STM32F4XX_SOC);
-    qdev_prop_set_string(soc, "soc-type", VARIANT_STM32F412_SOC);
+    soc = qdev_new(sc->soc);
+    if (sc->soc_variant)
+        qdev_prop_set_string(soc, "soc-type", sc->soc_variant);
     qdev_prop_set_uint32(DEVICE(&STM32F4XX_SOC(soc)->adc[0]), "value", 0xFFF);
     qdev_connect_clock_in(soc, "sysclk", sysclk);
     sysbus_realize(SYS_BUS_DEVICE(soc), &error_fatal);
@@ -125,7 +129,7 @@ static void n0100_init(MachineState *machine)
     qdev_prop_set_bit(gpio, "active-low", true);
     qdev_prop_set_uint32(gpio, "num-columns", 6);
     qdev_prop_set_uint32(gpio, "num-rows", 9);
-    gpio_keypad_set_keys(gpio, n0100_keys);
+    gpio_keypad_set_keys(gpio, numworks_keys);
     sysbus_realize(SYS_BUS_DEVICE(gpio), &error_fatal);
     for (i = 0; i < 9; i++) {
         qdev_connect_gpio_out_named(DEVICE(soc), "gpio-e-out", i,
@@ -144,18 +148,30 @@ static void n0100_init(MachineState *machine)
                        STM32F412_SOC_FLASH_SIZE);
 }
 
-static void n0100_machine_class_init(ObjectClass *oc, void *data)
+static void numworks_machine_class_init(ObjectClass *oc, void *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
-    mc->desc = "NumWorks N0100 calculator (Cortex-M4)";
-    mc->init = n0100_init;
+    mc->init = numworks_init;
+}
+
+static void n0100_machine_class_init(ObjectClass *oc, void *data)
+{
+    NumworksClass *sc = NUMWORKS_CLASS(oc);
+    sc->soc = TYPE_STM32F4XX_SOC;
+    sc->soc_variant = VARIANT_STM32F412_SOC;
 }
 
 static const TypeInfo numworks_machine_types[] = {
     {
-        .name           = MACHINE_TYPE_NAME("n0100"),
-        .parent         = TYPE_MACHINE,
+        .name           = "n0100",
+        .parent         = TYPE_NUMWORKS,
         .class_init     = n0100_machine_class_init,
+    }, {
+        .name           = TYPE_NUMWORKS,
+        .parent         = TYPE_MACHINE,
+        .class_init     = numworks_machine_class_init,
+        .class_size    = sizeof(NumworksClass),
+        .instance_size = sizeof(NumworksState),
     },
 };
 
