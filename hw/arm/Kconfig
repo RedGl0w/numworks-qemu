@@ -121,6 +121,7 @@ config NETDUINOPLUS2
 config NUMWORKS
     bool
     select STM32F4XX_SOC
+    select STM32F730_SOC
     select ST7789V
     select GPIO_KEYPAD
 
@@ -364,6 +365,18 @@ config STM32F205_SOC
     select STM32F2XX_SPI
 
 config STM32F4XX_SOC
+    bool
+    select ARM_V7M
+    select OR_IRQ
+    select STM32F2XX_GPIO
+    select STM32F2XX_RCC
+    select STM32F2XX_CRC
+    select STM32F2XX_RNG
+    select STM32F2XX_SYSCFG
+    select STM32F2XX_USB_OTG_FS
+    select STM32F4XX_EXTI
+
+config STM32F730_SOC
     bool
     select ARM_V7M
     select OR_IRQ
