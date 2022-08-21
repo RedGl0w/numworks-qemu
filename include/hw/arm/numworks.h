@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef HW_ARM_STM32F730_SOC_H
-#define HW_ARM_STM32F730_SOC_H
+#ifndef HW_NUMWORKS_H
+#define HW_NUMWORKS_H
 
 #include "qom/object.h"
 

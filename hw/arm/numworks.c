@@ -30,6 +30,7 @@
 #include "hw/qdev-clock.h"
 #include "qemu/error-report.h"
 #include "hw/arm/stm32f4xx_soc.h"
+#include "hw/arm/stm32f730_soc.h"
 #include "hw/arm/boot.h"
 #include "hw/input/gpio-keypad.h"
 #include "hw/display/st7789v.h"
@@ -156,9 +157,21 @@ static void numworks_machine_class_init(ObjectClass *oc, void *data)
 
 static void n0100_machine_class_init(ObjectClass *oc, void *data)
 {
-    NumworksClass *sc = NUMWORKS_CLASS(oc);
-    sc->soc = TYPE_STM32F4XX_SOC;
-    sc->soc_variant = VARIANT_STM32F412_SOC;
+    NumworksClass *nc = NUMWORKS_CLASS(oc);
+    nc->soc = TYPE_STM32F4XX_SOC;
+    nc->soc_variant = VARIANT_STM32F412_SOC;
+
+    MachineClass *mc = MACHINE_CLASS(oc);
+    mc->desc = "NumWorks N0100 calculator (Cortex-M4)";
+}
+
+static void n0110_machine_class_init(ObjectClass *oc, void *data)
+{
+    NumworksClass *nc = NUMWORKS_CLASS(oc);
+    nc->soc = TYPE_STM32F730_SOC;
+
+    MachineClass *mc = MACHINE_CLASS(oc);
+    mc->desc = "NumWorks N0110 calculator (Cortex-M7)";
 }
 
 static const TypeInfo numworks_machine_types[] = {
@@ -166,6 +179,10 @@ static const TypeInfo numworks_machine_types[] = {
         .name           = "n0100",
         .parent         = TYPE_NUMWORKS,
         .class_init     = n0100_machine_class_init,
+    }, {
+        .name           = "n0110",
+        .parent         = TYPE_NUMWORKS,
+        .class_init     = n0110_machine_class_init,
     }, {
         .name           = TYPE_NUMWORKS,
         .parent         = TYPE_MACHINE,

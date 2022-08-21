@@ -98,26 +98,26 @@ static void stm32f4xx_soc_initfn(Object *obj)
 
     object_initialize_child(obj, "syscfg", &s->syscfg, TYPE_STM32F2XX_SYSCFG);
 
-    for (i = 0; i < STM_NUM_GPIOS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_GPIOS; i++) {
         object_initialize_child(obj, "gpio[*]", &s->gpio[i],
                                 TYPE_STM32F2XX_GPIO);
     }
 
-    for (i = 0; i < STM_NUM_USARTS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_USARTS; i++) {
         object_initialize_child(obj, "usart[*]", &s->usart[i],
                                 TYPE_STM32F2XX_USART);
     }
 
-    for (i = 0; i < STM_NUM_TIMERS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_TIMERS; i++) {
         object_initialize_child(obj, "timer[*]", &s->timer[i],
                                 TYPE_STM32F2XX_TIMER);
     }
 
-    for (i = 0; i < STM_NUM_ADCS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_ADCS; i++) {
         object_initialize_child(obj, "adc[*]", &s->adc[i], TYPE_STM32F2XX_ADC);
     }
 
-    for (i = 0; i < STM_NUM_SPIS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_SPIS; i++) {
         object_initialize_child(obj, "spi[*]", &s->spi[i], TYPE_STM32F2XX_SPI);
     }
 
@@ -184,7 +184,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
                              "STM32F4XX.flash.alias", &s->flash, 0,
                              soc_variant->flash_size);
 
-    memory_region_add_subregion(system_memory, FLASH_BASE_ADDRESS, &s->flash);
+    memory_region_add_subregion(system_memory, STM32f4XX_FLASH_BASE_ADDRESS, &s->flash);
     memory_region_add_subregion(system_memory, 0, &s->flash_alias);
 
     memory_region_init_ram(&s->sram, NULL, "STM32F4XX.sram",
@@ -193,10 +193,10 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
         error_propagate(errp, err);
         return;
     }
-    memory_region_add_subregion(system_memory, SRAM_BASE_ADDRESS, &s->sram);
+    memory_region_add_subregion(system_memory, STM32f4XX_SRAM_BASE_ADDRESS, &s->sram);
 
     armv7m = DEVICE(&s->armv7m);
-    qdev_prop_set_uint32(armv7m, "init-nsvtor", FLASH_BASE_ADDRESS);
+    qdev_prop_set_uint32(armv7m, "init-nsvtor", STM32F412_SOC_FLASH_SIZE);
     qdev_prop_set_uint32(armv7m, "num-irq", 96);
     qdev_prop_set_string(armv7m, "cpu-type", ARM_CPU_TYPE_NAME("cortex-m4"));
     qdev_prop_set_bit(armv7m, "enable-bitband", true);
@@ -246,7 +246,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(armv7m, SYSCFG_IRQ));
 
     /* GPIOs */
-    for (i = 0; i < STM_NUM_GPIOS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_GPIOS; i++) {
         dev = DEVICE(&s->gpio[i]);
         if (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio[i]), errp)) {
             return;
@@ -257,7 +257,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     }
 
     /* Attach UART (uses USART registers) and USART controllers */
-    for (i = 0; i < STM_NUM_USARTS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_USARTS; i++) {
         dev = DEVICE(&(s->usart[i]));
         qdev_prop_set_chr(dev, "chardev", serial_hd(i));
         if (!sysbus_realize(SYS_BUS_DEVICE(&s->usart[i]), errp)) {
@@ -269,7 +269,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     }
 
     /* Timer 2 to 5 */
-    for (i = 0; i < STM_NUM_TIMERS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_TIMERS; i++) {
         dev = DEVICE(&(s->timer[i]));
         qdev_prop_set_uint64(dev, "clock-frequency", 1000000000);
         if (!sysbus_realize(SYS_BUS_DEVICE(&s->timer[i]), errp)) {
@@ -286,7 +286,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
                                             TYPE_OR_IRQ, errp, NULL)) {
         return;
     }
-    object_property_set_int(OBJECT(&s->adc_irqs), "num-lines", STM_NUM_ADCS,
+    object_property_set_int(OBJECT(&s->adc_irqs), "num-lines", STM32F4XX_NUM_ADCS,
                             &error_abort);
     if (!qdev_realize(DEVICE(&s->adc_irqs), NULL, errp)) {
         return;
@@ -294,7 +294,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     qdev_connect_gpio_out(DEVICE(&s->adc_irqs), 0,
                           qdev_get_gpio_in(armv7m, ADC_IRQ));
 
-    for (i = 0; i < STM_NUM_ADCS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_ADCS; i++) {
         dev = DEVICE(&(s->adc[i]));
         if (!sysbus_realize(SYS_BUS_DEVICE(&s->adc[i]), errp)) {
             return;
@@ -306,7 +306,7 @@ static void stm32f4xx_soc_realize(DeviceState *dev_soc, Error **errp)
     }
 
     /* SPI devices */
-    for (i = 0; i < STM_NUM_SPIS; i++) {
+    for (i = 0; i < STM32F4XX_NUM_SPIS; i++) {
         dev = DEVICE(&(s->spi[i]));
         if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi[i]), errp)) {
             return;

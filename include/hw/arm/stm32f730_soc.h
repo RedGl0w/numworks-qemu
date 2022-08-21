@@ -47,14 +47,14 @@ OBJECT_DECLARE_SIMPLE_TYPE(STM32F730State, STM32F730_SOC)
 #define STM32F730_SOC_FLASH_SIZE (64 * KiB)
 #define STM32F730_SOC_RAM_SIZE (256 * KiB)
 
-#define STM_NUM_GPIOS 9
-#define STM_NUM_USARTS 6
-#define STM_NUM_TIMERS 4
-#define STM_NUM_ADCS 6
-#define STM_NUM_SPIS 5
+#define STM32F730_NUM_GPIOS 9
+#define STM32F730_NUM_USARTS 6
+#define STM32F730_NUM_TIMERS 4
+#define STM32F730_NUM_ADCS 6
+#define STM32F730_NUM_SPIS 5
 
-#define FLASH_BASE_ADDRESS 0x08000000
-#define SRAM_BASE_ADDRESS 0x20000000
+#define STM32F730_FLASH_BASE_ADDRESS 0x08000000
+#define STM32F730_SRAM_BASE_ADDRESS 0x20000000
 
 struct STM32F730State {
     /*< private >*/
@@ -63,17 +63,17 @@ struct STM32F730State {
 
     ARMv7MState armv7m;
 
-    STM32F2xxGpioState gpio[STM_NUM_GPIOS];
+    STM32F2xxGpioState gpio[STM32F730_NUM_GPIOS];
     STM32F2XXRccState rcc;
     STM32F2XXCrcState crc;
     STM32F2XXRngState rng;
     STM32F2XXSyscfgState syscfg;
     STM32F4xxExtiState exti;
-    STM32F2XXUsartState usart[STM_NUM_USARTS];
-    STM32F2XXTimerState timer[STM_NUM_TIMERS];
+    STM32F2XXUsartState usart[STM32F730_NUM_USARTS];
+    STM32F2XXTimerState timer[STM32F730_NUM_TIMERS];
     qemu_or_irq adc_irqs;
-    STM32F2XXADCState adc[STM_NUM_ADCS];
-    STM32F2XXSPIState spi[STM_NUM_SPIS];
+    STM32F2XXADCState adc[STM32F730_NUM_ADCS];
+    STM32F2XXSPIState spi[STM32F730_NUM_SPIS];
     STM32F2XXUsbOtgFsState usb_otg_fs;
 
     MemoryRegion sram;
