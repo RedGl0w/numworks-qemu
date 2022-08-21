@@ -27,7 +27,7 @@
 
 #include "qom/object.h"
 
-#define TYPE_NUMWORKS ("numworks")
+#define TYPE_NUMWORKS MACHINE_TYPE_NAME("numworks")
 OBJECT_DECLARE_TYPE(NumworksState, NumworksClass, NUMWORKS)
 
 typedef struct NumworksState {
@@ -38,7 +38,7 @@ typedef struct NumworksState {
 } NumworksState;
 
 typedef struct NumworksClass {
-    DeviceClass parent_class;
+    MachineClass parent;
 
     const char * soc;
     const char * soc_variant;

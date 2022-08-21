@@ -176,11 +176,11 @@ static void n0110_machine_class_init(ObjectClass *oc, void *data)
 
 static const TypeInfo numworks_machine_types[] = {
     {
-        .name           = "n0100",
+        .name           = MACHINE_TYPE_NAME("n0100"),
         .parent         = TYPE_NUMWORKS,
         .class_init     = n0100_machine_class_init,
     }, {
-        .name           = "n0110",
+        .name           = MACHINE_TYPE_NAME("n0110"),
         .parent         = TYPE_NUMWORKS,
         .class_init     = n0110_machine_class_init,
     }, {
