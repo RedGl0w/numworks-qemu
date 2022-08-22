@@ -44,6 +44,8 @@ typedef struct NumworksClass {
     MachineClass parent;
     DeviceState* (*init)(NumworksState *s);
     int flash_size;
+    const char * RowGPIO;
+    const char * ColumnGPIO;
 } NumworksClass;
 
 #endif

@@ -131,12 +131,12 @@ static void numworks_init(MachineState *machine)
     gpio_keypad_set_keys(gpio, numworks_keys);
     sysbus_realize(SYS_BUS_DEVICE(gpio), &error_fatal);
     for (i = 0; i < 9; i++) {
-        qdev_connect_gpio_out_named(DEVICE(soc), "gpio-e-out", i,
+        qdev_connect_gpio_out_named(DEVICE(soc), sc->RowGPIO, i,
                                     qdev_get_gpio_in(gpio, i));
     }
     for (i = 0; i < 6; i++) {
         qdev_connect_gpio_out(DEVICE(gpio), i,
-                              qdev_get_gpio_in_named(soc, "gpio-c", i));
+                              qdev_get_gpio_in_named(soc, sc->ColumnGPIO, i));
     }
     object_unref(OBJECT(gpio));
 
@@ -168,6 +168,8 @@ static void n0100_machine_class_init(ObjectClass *oc, void *data)
     NumworksClass *nc = NUMWORKS_CLASS(oc);
     nc->init = &n0100_init;
     nc->flash_size = STM32F412_SOC_FLASH_SIZE;
+    nc->RowGPIO = "gpio-e-out";
+    nc->ColumnGPIO = "gpio-c";
 
     MachineClass *mc = MACHINE_CLASS(oc);
     mc->desc = "NumWorks N0100 calculator (Cortex-M4)";
@@ -195,6 +197,8 @@ static void n0110_machine_class_init(ObjectClass *oc, void *data)
     NumworksClass *nc = NUMWORKS_CLASS(oc);
     nc->init = &n0110_init;
     nc->flash_size = STM32F730_SOC_FLASH_SIZE;
+    nc->RowGPIO = "gpio-a-out";
+    nc->ColumnGPIO = "gpio-c";
 
     MachineClass *mc = MACHINE_CLASS(oc);
     mc->desc = "NumWorks N0110 calculator (Cortex-M7)";
