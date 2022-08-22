@@ -382,6 +382,7 @@ config STM32F730_SOC
     select OR_IRQ
     select STM32F2XX_GPIO
     select STM32F2XX_RCC
+    select STM32F2XX_PWR
     select STM32F2XX_CRC
     select STM32F2XX_RNG
     select STM32F2XX_SYSCFG

@@ -35,6 +35,7 @@
 #define RNG_ADD                        0x50060800
 #define SYSCFG_ADD                     0x40013800
 #define USB_OTG_FS_ADD                 0x50000000
+#define PWR_ADD                        0x40007000 
 
 static const char *gpio_pass[] = {
     "gpio-a",
@@ -82,6 +83,8 @@ static void stm32f730_soc_initfn(Object *obj)
     object_initialize_child(obj, "rcc", &s->rcc, TYPE_STM32F2XX_RCC);
 
     object_initialize_child(obj, "crc", &s->crc, TYPE_STM32F2XX_CRC);
+
+    object_initialize_child(obj, "pwr", &s->pwr, TYPE_STM32F2XX_PWR);
 
     object_initialize_child(obj, "rng", &s->rng, TYPE_STM32F2XX_RNG);
 
@@ -202,6 +205,15 @@ static void stm32f730_soc_realize(DeviceState *dev_soc, Error **errp)
 
     busdev = SYS_BUS_DEVICE(dev);
     sysbus_mmio_map(busdev, 0, CRC_ADD);
+
+    /* Power Controller */
+    dev = DEVICE(&s->pwr);
+    if (!sysbus_realize(SYS_BUS_DEVICE(&s->pwr), errp)) {
+        return;
+    }
+
+    busdev = SYS_BUS_DEVICE(dev);
+    sysbus_mmio_map(busdev, 0, PWR_ADD);
 
     /* Random Number Generation */
     dev = DEVICE(&s->rng);
@@ -347,6 +359,7 @@ static void stm32f730_soc_realize(DeviceState *dev_soc, Error **errp)
     create_unimplemented_device("RNG",         0x50060800, 0x400);
     create_unimplemented_device("FSMC",        0xA0000000, 0x1000);
     create_unimplemented_device("DES",         0x1FFF7A10, 0x200); // Device Electronic Signature
+    create_unimplemented_device("QSPI",        0xA0001000, 0x34);
 }
 
 static void stm32f730_soc_class_init(ObjectClass *klass, void *data)

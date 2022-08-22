@@ -92,6 +92,7 @@ softmmu_ss.add(when: 'CONFIG_XLNX_VERSAL', if_true: files(
   'xlnx-versal-pmc-iou-slcr.c',
 ))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_RCC', if_true: files('stm32f2xx_rcc.c'))
+softmmu_ss.add(when: 'CONFIG_STM32F2XX_PWR', if_true: files('stm32f2xx_pwr.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_CRC', if_true: files('stm32f2xx_crc.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_RNG', if_true: files('stm32f2xx_rng.c'))
 softmmu_ss.add(when: 'CONFIG_STM32F2XX_SYSCFG', if_true: files('stm32f2xx_syscfg.c'))

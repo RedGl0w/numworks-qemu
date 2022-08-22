@@ -28,6 +28,7 @@
 #include "hw/gpio/stm32f2xx_gpio.h"
 #include "hw/misc/stm32f2xx_rcc.h"
 #include "hw/misc/stm32f2xx_crc.h"
+#include "hw/misc/stm32f2xx_pwr.h"
 #include "hw/misc/stm32f2xx_rng.h"
 #include "hw/misc/stm32f2xx_syscfg.h"
 #include "hw/misc/stm32f2xx_usb_otg_fs.h"
@@ -67,6 +68,7 @@ struct STM32F730State {
     STM32F2xxGpioState gpio[STM32F730_NUM_GPIOS];
     STM32F2XXRccState rcc;
     STM32F2XXCrcState crc;
+    STM32F2XXPwrState pwr;
     STM32F2XXRngState rng;
     STM32F2XXSyscfgState syscfg;
     STM32F4xxExtiState exti;
