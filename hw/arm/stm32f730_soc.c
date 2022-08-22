@@ -150,18 +150,18 @@ static void stm32f730_soc_realize(DeviceState *dev_soc, Error **errp)
     clock_set_mul_div(s->refclk, 8, 1);
     clock_set_source(s->refclk, s->sysclk);
 
-    memory_region_init_rom(&s->flash, OBJECT(dev_soc), "STM32F730.flash",
+    memory_region_init_rom(&s->flash, OBJECT(dev_soc), "STM32F730.flash.ictm",
                            STM32F730_SOC_FLASH_SIZE, &err);
     if (err != NULL) {
         error_propagate(errp, err);
         return;
     }
     memory_region_init_alias(&s->flash_alias, OBJECT(dev_soc),
-                             "STM32F730.flash.alias", &s->flash, 0,
+                             "STM32F730.flash.axim", &s->flash, 0,
                              STM32F730_SOC_FLASH_SIZE);
 
-    memory_region_add_subregion(system_memory, STM32F730_SOC_FLASH_SIZE, &s->flash);
-    memory_region_add_subregion(system_memory, 0, &s->flash_alias);
+    memory_region_add_subregion(system_memory, STM32F730_FLASH_BASE_ADDRESS_ITCM, &s->flash);
+    memory_region_add_subregion(system_memory, STM32F730_FLASH_BASE_ADDRESS_AXIM, &s->flash_alias);
 
     memory_region_init_ram(&s->sram, NULL, "STM32F730.sram",
                            STM32F730_SOC_RAM_SIZE, &err);
@@ -172,7 +172,7 @@ static void stm32f730_soc_realize(DeviceState *dev_soc, Error **errp)
     memory_region_add_subregion(system_memory, STM32F730_SOC_RAM_SIZE, &s->sram);
 
     armv7m = DEVICE(&s->armv7m);
-    qdev_prop_set_uint32(armv7m, "init-nsvtor", STM32F730_FLASH_BASE_ADDRESS);
+    qdev_prop_set_uint32(armv7m, "init-nsvtor", STM32F730_FLASH_BASE_ADDRESS_ITCM);
     qdev_prop_set_uint32(armv7m, "num-irq", 96);
     qdev_prop_set_string(armv7m, "cpu-type", ARM_CPU_TYPE_NAME("cortex-m7"));
     qdev_prop_set_bit(armv7m, "enable-bitband", true);
