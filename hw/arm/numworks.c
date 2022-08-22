@@ -37,9 +37,6 @@
 #include "hw/arm/numworks.h"
 #include "include/exec/address-spaces.h"
 
-/* Main SYSCLK frequency in Hz (100MHz) */
-#define SYSCLK_FRQ 100000000ULL
-
 #define ST7789V_ADD 0x60000000
 
 static const GpioKeypadKey numworks_keys[] = { // FIX ME : This isn't shared by both models
@@ -113,7 +110,7 @@ static void numworks_init(MachineState *machine)
 
     /* This clock doesn't need migration because it is fixed-frequency */
     sysclk = clock_new(OBJECT(machine), "SYSCLK");
-    clock_set_hz(sysclk, SYSCLK_FRQ);
+    clock_set_hz(sysclk, sc->SysclkFrq);
 
     soc = sc->init(s);
     qdev_connect_clock_in(soc, "sysclk", sysclk);
@@ -170,6 +167,7 @@ static void n0100_machine_class_init(ObjectClass *oc, void *data)
     nc->flash_size = STM32F412_SOC_FLASH_SIZE;
     nc->RowGPIO = "gpio-e-out";
     nc->ColumnGPIO = "gpio-c";
+    nc->SysclkFrq = 100000000ULL;
 
     MachineClass *mc = MACHINE_CLASS(oc);
     mc->desc = "NumWorks N0100 calculator (Cortex-M4)";
@@ -199,6 +197,7 @@ static void n0110_machine_class_init(ObjectClass *oc, void *data)
     nc->flash_size = STM32F730_SOC_FLASH_SIZE;
     nc->RowGPIO = "gpio-a-out";
     nc->ColumnGPIO = "gpio-c";
+    nc->SysclkFrq = 192000000ULL;
 
     MachineClass *mc = MACHINE_CLASS(oc);
     mc->desc = "NumWorks N0110 calculator (Cortex-M7)";

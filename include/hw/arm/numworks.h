@@ -46,6 +46,7 @@ typedef struct NumworksClass {
     int flash_size;
     const char * RowGPIO;
     const char * ColumnGPIO;
+    unsigned long long int SysclkFrq;
 } NumworksClass;
 
 #endif
