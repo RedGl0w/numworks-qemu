@@ -114,10 +114,7 @@ static void numworks_init(MachineState *machine)
     sysclk = clock_new(OBJECT(machine), "SYSCLK");
     clock_set_hz(sysclk, SYSCLK_FRQ);
 
-    soc = qdev_new(sc->soc);
-    if (sc->soc_variant)
-        qdev_prop_set_string(soc, "soc-type", sc->soc_variant);
-    qdev_prop_set_uint32(DEVICE(&STM32F4XX_SOC(soc)->adc[0]), "value", 0xFFF);
+    soc = sc->init();
     qdev_connect_clock_in(soc, "sysclk", sysclk);
     sysbus_realize(SYS_BUS_DEVICE(soc), &error_fatal);
 
@@ -146,7 +143,7 @@ static void numworks_init(MachineState *machine)
 
     armv7m_load_kernel(ARM_CPU(first_cpu),
                        machine->kernel_filename,
-                       STM32F412_SOC_FLASH_SIZE);
+                       sc->flash_size);
 }
 
 static void numworks_machine_class_init(ObjectClass *oc, void *data)
@@ -155,20 +152,39 @@ static void numworks_machine_class_init(ObjectClass *oc, void *data)
     mc->init = numworks_init;
 }
 
+
+static DeviceState* n0100_init(void)
+{
+    DeviceState *soc;
+    soc = qdev_new(TYPE_STM32F4XX_SOC);
+    qdev_prop_set_string(soc, "soc-type", VARIANT_STM32F412_SOC);
+    qdev_prop_set_uint32(DEVICE(&STM32F4XX_SOC(soc)->adc[0]), "value", 0xFFF);
+    return soc;
+}
+
 static void n0100_machine_class_init(ObjectClass *oc, void *data)
 {
     NumworksClass *nc = NUMWORKS_CLASS(oc);
-    nc->soc = TYPE_STM32F4XX_SOC;
-    nc->soc_variant = VARIANT_STM32F412_SOC;
+    nc->init = &n0100_init;
+    nc->flash_size = STM32F412_SOC_FLASH_SIZE;
 
     MachineClass *mc = MACHINE_CLASS(oc);
     mc->desc = "NumWorks N0100 calculator (Cortex-M4)";
 }
 
+static DeviceState* n0110_init(void)
+{
+    DeviceState *soc;
+    soc = qdev_new(TYPE_STM32F730_SOC);
+    qdev_prop_set_uint32(DEVICE(&STM32F730_SOC(soc)->adc[0]), "value", 0xFFF);
+    return soc;
+}
+
 static void n0110_machine_class_init(ObjectClass *oc, void *data)
 {
     NumworksClass *nc = NUMWORKS_CLASS(oc);
-    nc->soc = TYPE_STM32F730_SOC;
+    nc->init = &n0110_init;
+    nc->flash_size = STM32F730_SOC_FLASH_SIZE;
 
     MachineClass *mc = MACHINE_CLASS(oc);
     mc->desc = "NumWorks N0110 calculator (Cortex-M7)";

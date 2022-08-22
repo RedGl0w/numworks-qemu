@@ -39,9 +39,8 @@ typedef struct NumworksState {
 
 typedef struct NumworksClass {
     MachineClass parent;
-
-    const char * soc;
-    const char * soc_variant;
+    DeviceState* (*init)(void);
+    int flash_size;
 } NumworksClass;
 
 #endif
