@@ -35,11 +35,14 @@ typedef struct NumworksState {
     SysBusDevice parent_obj;
 
     /*< public >*/
+
+    MemoryRegion external_flash;
+
 } NumworksState;
 
 typedef struct NumworksClass {
     MachineClass parent;
-    DeviceState* (*init)(void);
+    DeviceState* (*init)(NumworksState *s);
     int flash_size;
 } NumworksClass;
 

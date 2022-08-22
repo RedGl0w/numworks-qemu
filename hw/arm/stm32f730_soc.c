@@ -169,7 +169,7 @@ static void stm32f730_soc_realize(DeviceState *dev_soc, Error **errp)
         error_propagate(errp, err);
         return;
     }
-    memory_region_add_subregion(system_memory, STM32F730_SOC_RAM_SIZE, &s->sram);
+    memory_region_add_subregion(system_memory, STM32F730_SRAM_BASE_ADDRESS, &s->sram);
 
     armv7m = DEVICE(&s->armv7m);
     qdev_prop_set_uint32(armv7m, "init-nsvtor", STM32F730_FLASH_BASE_ADDRESS_ITCM);

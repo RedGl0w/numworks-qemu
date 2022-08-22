@@ -35,6 +35,7 @@
 #include "hw/input/gpio-keypad.h"
 #include "hw/display/st7789v.h"
 #include "hw/arm/numworks.h"
+#include "include/exec/address-spaces.h"
 
 /* Main SYSCLK frequency in Hz (100MHz) */
 #define SYSCLK_FRQ 100000000ULL
@@ -114,7 +115,7 @@ static void numworks_init(MachineState *machine)
     sysclk = clock_new(OBJECT(machine), "SYSCLK");
     clock_set_hz(sysclk, SYSCLK_FRQ);
 
-    soc = sc->init();
+    soc = sc->init(s);
     qdev_connect_clock_in(soc, "sysclk", sysclk);
     sysbus_realize(SYS_BUS_DEVICE(soc), &error_fatal);
 
@@ -153,7 +154,7 @@ static void numworks_machine_class_init(ObjectClass *oc, void *data)
 }
 
 
-static DeviceState* n0100_init(void)
+static DeviceState* n0100_init(NumworksState *s)
 {
     DeviceState *soc;
     soc = qdev_new(TYPE_STM32F4XX_SOC);
@@ -172,11 +173,20 @@ static void n0100_machine_class_init(ObjectClass *oc, void *data)
     mc->desc = "NumWorks N0100 calculator (Cortex-M4)";
 }
 
-static DeviceState* n0110_init(void)
+static DeviceState* n0110_init(NumworksState *s)
 {
     DeviceState *soc;
+    Error *err = NULL;
     soc = qdev_new(TYPE_STM32F730_SOC);
     qdev_prop_set_uint32(DEVICE(&STM32F730_SOC(soc)->adc[0]), "value", 0xFFF);
+
+    memory_region_init_rom(&s->external_flash, OBJECT(s), "numworks.external.flash", 8 * MiB, &err);
+    if (err != NULL) {
+        assert(false); // Propagate error ?
+    }
+    MemoryRegion *system_memory = get_system_memory();
+    memory_region_add_subregion(system_memory, 0x90000000, &s->external_flash);
+
     return soc;
 }
 
