@@ -47,6 +47,7 @@ typedef struct NumworksClass {
     const char * RowGPIO;
     const char * ColumnGPIO;
     unsigned long long int SysclkFrq;
+    const GpioKeypadKey* keys;
 } NumworksClass;
 
 #endif
