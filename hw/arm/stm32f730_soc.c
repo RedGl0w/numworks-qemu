@@ -360,6 +360,7 @@ static void stm32f730_soc_realize(DeviceState *dev_soc, Error **errp)
     create_unimplemented_device("FSMC",        0xA0000000, 0x1000);
     create_unimplemented_device("DES",         0x1FF07A10, 0x200); // Device Electronic Signature
     create_unimplemented_device("QSPI",        0xA0001000, 0x34);
+    create_unimplemented_device("OTP",         0x1FF07800, 0x210);
 }
 
 static void stm32f730_soc_class_init(ObjectClass *klass, void *data)
